@@ -13,9 +13,6 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
 
-      - name: Change to project directory
-        run: cd rusty_ache
-
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
 
