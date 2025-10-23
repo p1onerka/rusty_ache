@@ -3,11 +3,11 @@ pub mod input;
 pub mod scene;
 mod scene_manager;
 
-use crate::engine::config::Config;
+use crate::engine::config::{Config, EngineConfig};
 use crate::engine::scene::Scene;
 use crate::engine::scene_manager::SceneManager;
-use std::io::Error;
 use crate::render::renderer::Renderer;
+use std::io::Error;
 
 /// A trait for describing entity for main engine logic
 pub trait Engine {
@@ -37,13 +37,15 @@ impl Engine for GameEngine {
         todo!()
     }
 
-    fn new(config: Box<dyn Config>, scene: Box<dyn Scene>) -> Self
+    fn new(config: Box<(dyn Config + 'static)>, scene: Box<dyn Scene>) -> Self
     where
         Self: Sized,
     {
+        let res = config.get_resolution();
         GameEngine {
             config,
             scene_manager: SceneManager::new(scene),
+            render: Renderer::new(res, (0, 0, 0)),
         }
     }
 }
