@@ -1,9 +1,8 @@
-use crate::engine::scene::game_object::component::{Component, ComponentError};
-use crate::engine::scene::game_object::position::Position;
-use std::error::Error;
+use crate::engine::scene::game_object::components::{Component, ComponentError};
+pub(crate) use crate::engine::scene::game_object::position::Position;
 
-pub mod component;
-mod position;
+pub mod components;
+pub mod position;
 
 pub enum GameObjectError {
     ComponentError(ComponentError),
