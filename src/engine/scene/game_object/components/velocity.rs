@@ -1,4 +1,5 @@
 use super::*;
+use crate::engine::scene::game_object::Object;
 use image::DynamicImage;
 
 pub struct Velocity {
@@ -9,6 +10,10 @@ pub struct Velocity {
 impl Velocity {
     pub fn new() -> Self {
         Velocity { x: 0, y: 0 }
+    }
+    pub fn update(&mut self, x: usize, y: usize) {
+        self.x = x;
+        self.y = y;
     }
 }
 

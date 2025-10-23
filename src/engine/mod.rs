@@ -7,6 +7,7 @@ use crate::engine::config::Config;
 use crate::engine::scene::Scene;
 use crate::engine::scene_manager::SceneManager;
 use std::io::Error;
+use crate::render::renderer::Renderer;
 
 /// A trait for describing entity for main engine logic
 pub trait Engine {
@@ -21,6 +22,7 @@ pub trait Engine {
 pub struct GameEngine {
     config: Box<dyn Config>,
     scene_manager: SceneManager,
+    render: Renderer,
 }
 
 impl Engine for GameEngine {
