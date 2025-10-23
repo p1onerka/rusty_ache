@@ -1,5 +1,4 @@
 /// use crate::engine::Scene;
-
 /// A trait describing entity for Engine configuring
 pub trait Config {
     fn set_resolution(&mut self, width: u32, height: u32);

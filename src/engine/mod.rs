@@ -1,13 +1,15 @@
 pub mod config;
 pub mod input;
 pub mod scene;
+mod scene_manager;
 
 use crate::engine::config::Config;
 use crate::engine::scene::Scene;
+use crate::engine::scene_manager::SceneManager;
 use std::io::Error;
 
 /// A trait for describing entity for main engine logic
-pub trait EngineTrait {
+pub trait Engine {
     fn set_active_scene(&mut self, new_scene: Box<dyn Scene>) -> Result<(), Error>;
     fn render(&mut self) -> Result<(), Error>;
 
@@ -16,14 +18,15 @@ pub trait EngineTrait {
         Self: Sized;
 }
 
-pub struct Engine {
+pub struct GameEngine {
     config: Box<dyn Config>,
-    scene: Box<dyn Scene>,
+    scene_manager: SceneManager,
 }
 
-impl EngineTrait for Engine {
+impl Engine for GameEngine {
     fn set_active_scene(&mut self, new_scene: Box<dyn Scene>) -> Result<(), Error> {
-        self.scene = new_scene;
+        self.scene_manager = SceneManager::new(new_scene);
+
         // Can return Err if scene isn't found. Not implemented.
         Ok(())
     }
@@ -36,6 +39,9 @@ impl EngineTrait for Engine {
     where
         Self: Sized,
     {
-        Engine { config, scene }
+        GameEngine {
+            config,
+            scene_manager: SceneManager::new(scene),
+        }
     }
 }

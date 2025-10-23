@@ -1,4 +1,41 @@
+use crate::engine::scene::game_object::component::{Component, ComponentError};
+use crate::engine::scene::game_object::position::Position;
+use std::error::Error;
+
 pub mod component;
+mod position;
+
+pub enum GameObjectError {
+    ComponentError(ComponentError),
+    UIDError(String),
+    PositionError(String),
+    UnknownError(String),
+}
 
 /// A trait describing the basic game object entity
-pub trait GameObject {}
+pub trait Object {
+    fn get_uid(&self) -> usize;
+    fn add_component(&mut self, game_object: Box<dyn Component>) -> Result<(), GameObjectError>;
+
+    fn remove_component(&mut self, game_object_id: usize) -> Result<(), GameObjectError>;
+
+    fn get_position(&self) -> Result<Position, GameObjectError>;
+
+    fn update_position(&mut self, position: Position) -> Result<(), GameObjectError>;
+}
+
+pub struct GameObject {
+    components: Vec<Box<dyn Component>>,
+    position: Position,
+    uid: usize,
+}
+
+impl GameObject {
+    pub fn new(components: Vec<Box<dyn Component>>, position: Position, uid: usize) -> Self {
+        GameObject {
+            components,
+            position,
+            uid,
+        }
+    }
+}
