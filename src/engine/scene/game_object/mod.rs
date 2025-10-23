@@ -1,2 +1,4 @@
 pub mod component;
-pub mod game_object;
+
+/// A trait describing the basic game object entity
+pub trait GameObject {}
