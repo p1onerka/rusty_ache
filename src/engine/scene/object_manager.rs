@@ -1,8 +1,8 @@
-use std::collections::HashSet;
-use crate::engine::*;
-use crate::engine::scene::game_object::components::Component;
+use crate::engine::scene::Scene;
 use crate::engine::scene::game_object::GameObject;
 use crate::engine::scene::game_object::Position;
+use crate::engine::scene::game_object::components::Component;
+use std::collections::{HashMap, HashSet};
 
 pub struct GameObjectFactory {
     uids: HashSet<usize>,
@@ -19,15 +19,41 @@ impl GameObjectFactory {
         }
     }
 
-    pub fn create_object(&mut self, components: Vec<Box<dyn Component>>, position: Position) -> GameObject {
+    pub fn create_object(
+        &mut self,
+        components: Vec<Box<dyn Component>>,
+        position: Position,
+    ) -> (usize, GameObject) {
         if self.uids.is_empty() && self.max_objects == self.allocated_objects {
             panic!("Trying to create object above limit")
         } else if self.uids.is_empty() == false {
             let uid = self.uids.iter().next().unwrap().clone();
             self.uids.remove(&uid);
-            return GameObject::new(components, position, uid)
+            return (uid, GameObject::new(components, position, uid));
         }
         self.allocated_objects += 1;
-        GameObject::new(components, position, self.allocated_objects)
+        (
+            self.allocated_objects,
+            GameObject::new(components, position, self.allocated_objects),
+        )
+    }
+}
+
+struct GameObjectManager {
+    game_objects: HashMap<usize, GameObject>,
+    factory: GameObjectFactory,
+}
+
+impl GameObjectManager {
+    pub fn new(max_objects: usize) -> Self {
+        GameObjectManager {
+            game_objects: HashMap::new(),
+            factory: GameObjectFactory::new(max_objects),
+        }
+    }
+
+    pub fn add_game_object(&mut self, components: Vec<Box<dyn Component>>, position: Position) {
+        let (uid, object) = self.factory.create_object(components, position);
+        self.game_objects.insert(uid, object);
     }
 }
