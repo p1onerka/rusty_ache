@@ -2,13 +2,13 @@ use std::sync::{Arc, RwLock};
 use std::thread;
 use std::time::{Duration, Instant};
 
+use crate::Resolution;
 use pixels::{Pixels, SurfaceTexture};
 use winit::application::ApplicationHandler;
 use winit::dpi::LogicalSize;
 use winit::event::WindowEvent;
 use winit::event_loop::{ActiveEventLoop, ControlFlow, EventLoop};
 use winit::window::{Window, WindowAttributes, WindowId};
-use crate::Resolution;
 
 pub const WIDTH: u32 = 200;
 pub const HEIGHT: u32 = 200;
@@ -166,7 +166,7 @@ pub fn example() {
     };
     let initial_pixels =
         vec![0x000000u32; (initial_resolution.width * initial_resolution.height) as usize];
-        
+
     let shared_pixel_data = Arc::new(RwLock::new(initial_pixels));
     let shared_window = Arc::new(RwLock::new(None));
 
