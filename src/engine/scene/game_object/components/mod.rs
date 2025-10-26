@@ -1,6 +1,8 @@
 //! A trait describing an entity of game object component, such as Sprite, Camera etc.
 
-mod sprite;
+use std::any::Any;
+
+pub(crate) mod sprite;
 mod velocity;
 
 pub enum ComponentError {
@@ -9,4 +11,6 @@ pub enum ComponentError {
     UnknownError(String),
 }
 
-pub trait Component {}
+pub trait Component: Any {
+    fn as_any(&self) -> &dyn Any;
+}
