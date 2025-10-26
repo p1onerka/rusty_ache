@@ -1,6 +1,7 @@
+#[derive(Clone, Copy)]
 pub struct Position {
-    x: u32,
-    y: u32,
-    z: u32,
-    is_relative: bool,
+    pub x: u32,
+    pub y: u32,
+    pub z: u32,
+    pub is_relative: bool,
 }

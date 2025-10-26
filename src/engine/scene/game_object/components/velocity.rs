@@ -17,4 +17,8 @@ impl Velocity {
     }
 }
 
-impl Component for Velocity {}
+impl Component for Velocity {
+    fn as_any(&self) -> &dyn Any {
+        self
+    }
+}

@@ -24,9 +24,9 @@ pub trait Object {
 }
 
 pub struct GameObject {
-    components: Vec<Box<dyn Component>>,
-    position: Position,
-    uid: usize,
+    pub components: Vec<Box<dyn Component>>,
+    pub position: Position,
+    pub uid: usize,
 }
 
 impl GameObject {

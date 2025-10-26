@@ -1,8 +1,10 @@
+use std::any::Any;
+
 use crate::engine::scene::game_object::components::Component;
 use image::DynamicImage;
 
 pub struct Sprite {
-    image: Option<DynamicImage>,
+    pub image: Option<DynamicImage>,
 }
 
 impl Sprite {
@@ -11,4 +13,8 @@ impl Sprite {
     }
 }
 
-impl Component for Sprite {}
+impl Component for Sprite {
+    fn as_any(&self) -> &dyn Any {
+        self
+    }
+}
