@@ -1,4 +1,4 @@
-mod utils;
+pub mod utils;
 
 /// A trait describing entity for coloring game frames.
 ///
