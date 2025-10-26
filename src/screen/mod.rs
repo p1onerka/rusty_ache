@@ -8,16 +8,10 @@ use winit::dpi::LogicalSize;
 use winit::event::WindowEvent;
 use winit::event_loop::{ActiveEventLoop, ControlFlow, EventLoop};
 use winit::window::{Window, WindowAttributes, WindowId};
+use crate::Resolution;
 
 pub const WIDTH: u32 = 200;
 pub const HEIGHT: u32 = 200;
-
-/// Struct representing screen resolution.
-#[derive(Copy, Clone)]
-pub struct Resolution {
-    pub width: u32,
-    pub height: u32,
-}
 
 /// Struct representing Screen, on which a game will be drawn
 pub struct Screen<'a> {
