@@ -11,6 +11,7 @@ pub enum ComponentError {
     Exist(Box<dyn Component>),
     CannotApply(String),
     UnknownError(String),
+    InvalidIndex(String),
 }
 
 #[derive(Eq, PartialEq, Clone)]
