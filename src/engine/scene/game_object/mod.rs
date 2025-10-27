@@ -13,8 +13,7 @@ pub enum GameObjectError {
 
 /// A trait describing the basic game object entity
 pub trait Object {
-    fn new(components: Vec<Box<dyn Component>>, position: Position, uid: usize) -> Self;
-    fn get_uid(&self) -> usize;
+    fn new(components: Vec<Box<dyn Component>>, position: Position) -> Self;
     fn add_component(&mut self, component: Box<dyn Component>) -> Result<(), GameObjectError>;
 
     fn remove_component(&mut self, component_id: usize) -> Result<(), GameObjectError>;
@@ -30,12 +29,11 @@ pub struct GameObject {
 }
 
 impl Object for GameObject {
-    fn new(components: Vec<Box<dyn Component>>, position: Position, uid: usize) -> Self {
+    fn new(components: Vec<Box<dyn Component>>, position: Position) -> Self {
         GameObject {
             components,
             position,
-        };
-        go
+        }
     }
     fn add_component(&mut self, component: Box<dyn Component>) -> Result<(), GameObjectError> {
         self.components.push(component);
@@ -43,9 +41,6 @@ impl Object for GameObject {
     }
     fn get_position(&self) -> Result<&Position, GameObjectError> {
         Ok(&self.position)
-    }
-    fn get_uid(&self) -> usize {
-        return self.uid;
     }
     fn remove_component(&mut self, component_id: usize) -> Result<(), GameObjectError> {
         if component_id >= self.components.len() {

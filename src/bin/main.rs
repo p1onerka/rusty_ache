@@ -2,7 +2,7 @@ use image::{ImageFormat, ImageReader};
 use rusty_ache::Resolution;
 use rusty_ache::engine::config::{Config, EngineConfig};
 use rusty_ache::engine::scene::Scene;
-use rusty_ache::engine::scene::game_object::GameObject;
+use rusty_ache::engine::scene::game_object::{GameObject, Object};
 use rusty_ache::engine::scene::game_object::components::sprite::Sprite;
 use rusty_ache::engine::scene::game_object::position::Position;
 use rusty_ache::engine::{Engine, GameEngine};
