@@ -97,6 +97,22 @@ impl Engine for GameEngine {
 
             let screen_size = (WIDTH * HEIGHT) as usize;
             loop {
+                let vector_move = match *key_pressed_clone.read().unwrap() {
+                    Some(KeyCode::KeyW) => (0, 1),
+                    Some(KeyCode::KeyA) => (-1, 0),
+                    Some(KeyCode::KeyS) => (0, -1),
+                    Some(KeyCode::KeyD) => (1, 0),
+                    _ => (0, 0),
+                };
+                println!("{:?}", vector_move);
+                renderer
+                    .write()
+                    .unwrap()
+                    .scene_manager
+                    .active_scene
+                    .main_object
+                    .add_position((vector_move.0, vector_move.1));
+                //renderer.clear_poison();
                 renderer.write().unwrap().render();
                 match renderer.write().unwrap().emit() {
                     Some(colors) => {
@@ -111,7 +127,7 @@ impl Engine for GameEngine {
                         window_arc.request_redraw();
                     }
                     None => {
-                        println!("Emition failed");
+                        //println!("Emition failed");
                         continue;
                     }
                 }

@@ -12,20 +12,50 @@ fn main() {
     let mut engine = GameEngine::new(
         Box::new(EngineConfig::new(Resolution::new(200, 200))),
         Scene::new(
-            vec![GameObject::new(
-                vec![Box::new(Sprite::new(Some(
-                    ImageReader::open("src/bin/resources/battlecruiser_main.png")
-                        .unwrap()
-                        .decode()
-                        .unwrap(),
-                )))],
-                Position {
-                    x: 0,
-                    y: 0,
-                    z: 1,
-                    is_relative: false,
-                },
-            )],
+            vec![
+                GameObject::new(
+                    vec![Box::new(Sprite::new(Some(
+                        ImageReader::open("src/bin/resources/command_center.png")
+                            .unwrap()
+                            .decode()
+                            .unwrap(),
+                    )))],
+                    Position {
+                        x: 0,
+                        y: 0,
+                        z: 1,
+                        is_relative: false,
+                    },
+                ),
+                GameObject::new(
+                    vec![Box::new(Sprite::new(Some(
+                        ImageReader::open("src/bin/resources/command_center.png")
+                            .unwrap()
+                            .decode()
+                            .unwrap(),
+                    )))],
+                    Position {
+                        x: 130,
+                        y: -100,
+                        z: 2,
+                        is_relative: false,
+                    },
+                ),
+                GameObject::new(
+                    vec![Box::new(Sprite::new(Some(
+                        ImageReader::open("src/bin/resources/command_center.png")
+                            .unwrap()
+                            .decode()
+                            .unwrap(),
+                    )))],
+                    Position {
+                        x: 15,
+                        y: -25,
+                        z: 3,
+                        is_relative: false,
+                    },
+                ),
+            ],
             vec![Box::new(Sprite::new(Some(
                 ImageReader::open("src/bin/resources/battlecruiser_main.png")
                     .unwrap()
@@ -33,8 +63,8 @@ fn main() {
                     .unwrap(),
             )))],
             Position {
-                x: 0,
-                y: 0,
+                x: -10,
+                y: 10,
                 z: 0,
                 is_relative: false,
             },

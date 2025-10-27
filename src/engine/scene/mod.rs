@@ -33,20 +33,23 @@ impl Scene {
 
     pub fn init(&self) -> Vec<(&GameObject, &DynamicImage)> {
         let mut renderable_objects: Vec<(&GameObject, &DynamicImage)> = vec![];
-        println!("Starting scene init");
         for obj in self.manager.game_objects.values() {
             for component in obj.components.iter() {
-                println!("Iterating over component");
                 if component.get_component_type() == ComponentType::Sprite {
-                    println!("Pushing sprite");
                     renderable_objects
                         .push((obj, &component.get_sprite_unchecked().as_ref().unwrap()));
-                    println!("Pushed sprite");
                 }
             }
-            println!("Object collected");
         }
         renderable_objects.sort_by(|a, b| a.0.position.z.cmp(&b.0.position.z));
+        for component in self.main_object.components.iter() {
+            if component.get_component_type() == ComponentType::Sprite {
+                renderable_objects.push((
+                    &self.main_object,
+                    &component.get_sprite_unchecked().as_ref().unwrap(),
+                ));
+            }
+        }
         renderable_objects
     }
 }

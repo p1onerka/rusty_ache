@@ -35,7 +35,7 @@ pub struct Renderer {
     background: Option<DynamicImage>,
     prev_frame: Vec<(u8, u8, u8, u8)>,
     renderable: Vec<Renderable>,
-    pub(crate) scene_manager: SceneManager,
+    pub scene_manager: SceneManager,
 }
 
 impl Renderer {
@@ -145,7 +145,7 @@ impl Renderer {
                 main_object.position.y - HEIGHT as i32,
             ),
         };
-        println!("{} {}", main_object.position.y, HEIGHT);
+        //println!("{} {}", main_object.position.y, HEIGHT);
 
         // TODO: what happens when two objects have the same z?
         let uids_by_z = HashMap::<u32, usize>::new();
@@ -158,10 +158,10 @@ impl Renderer {
                 top_left: (obj.position.x, obj.position.y),
                 bot_right: im_bot_right,
             };
-            println!(
-                "{} {} {} {}",
-                im_rect.bot_right.0, im_rect.bot_right.1, im_rect.top_left.0, im_rect.top_left.1
-            );
+            //println!(
+            //"{} {} {} {}",
+            //im_rect.bot_right.0, im_rect.bot_right.1, im_rect.top_left.0, im_rect.top_left.1
+            //);
             Self::blit_sprite(
                 &mut frame,
                 img,
@@ -176,6 +176,6 @@ impl Renderer {
 
     /// Emit new frame to Screen
     pub fn emit(&mut self) -> Option<Vec<(u8, u8, u8, u8)>> {
-        return Some(self.prev_frame.clone());
+        Some(self.prev_frame.clone())
     }
 }

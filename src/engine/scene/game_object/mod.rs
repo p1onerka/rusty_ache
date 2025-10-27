@@ -36,4 +36,9 @@ impl GameObject {
         };
         go
     }
+
+    pub fn add_position(&mut self, vec: (i32, i32)) {
+        self.position.x = self.position.x + vec.0;
+        self.position.y = self.position.y + vec.1;
+    }
 }
