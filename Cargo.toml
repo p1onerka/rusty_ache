@@ -8,6 +8,7 @@ name = "main"
 path = "src/bin/main.rs"
 
 [dependencies]
+
 image = "0.25.8"
 pixels = "0.15.0"
 winit = "0.30.12"
