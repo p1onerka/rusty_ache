@@ -15,7 +15,6 @@ pub struct Scene {
     pub main_object: GameObject,
 }
 
-
 impl Scene {
     pub fn new(
         objects: Vec<GameObject>,

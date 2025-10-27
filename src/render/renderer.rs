@@ -103,7 +103,10 @@ impl Renderer {
                 top_left: (obj.position.x, obj.position.y),
                 bot_right: im_bot_right,
             };
-            println!("{} {} {} {}", im_rect.bot_right.0, im_rect.bot_right.1, im_rect.top_left.0, im_rect.top_left.1);
+            println!(
+                "{} {} {} {}",
+                im_rect.bot_right.0, im_rect.bot_right.1, im_rect.top_left.0, im_rect.top_left.1
+            );
         }
 
         // sort objects by z coord in descending order
