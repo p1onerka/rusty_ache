@@ -1,2 +1,2 @@
 # rusty_ache
-The best rust game engine!
+Blazingly fast game engine written in Rust.
