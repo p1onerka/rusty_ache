@@ -50,7 +50,11 @@ impl Object for GameObject {
     fn remove_component(&mut self, component_id: usize) -> Result<(), GameObjectError> {
         if component_id >= self.components.len() {
             return Err(GameObjectError::ComponentError(
-                ComponentError::InvalidIndex(format!("Component ID {} is out of bounds (length: {})", component_id, self.components.len())),
+                ComponentError::InvalidIndex(format!(
+                    "Component ID {} is out of bounds (length: {})",
+                    component_id,
+                    self.components.len()
+                )),
             ));
         }
 
