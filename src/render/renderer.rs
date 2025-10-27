@@ -132,32 +132,7 @@ impl Renderer {
         let height = self.resolution.height;
 
         // create an empty frame buffer
-        let mut frame: Vec<(u8, u8, u8, u8)> = Vec::with_capacity((width * height) as usize);
-
-        if let Some(bg) = &self.background {
-            let (bg_w, bg_h) = bg.dimensions();
-
-            // loop over every pixel on screen
-            for sy in 0..height {
-                for sx in 0..width {
-                    // convert screen pixel to world coordinates
-                    let world_x = camera.position.x + sx;
-                    let world_y = (camera.position.y as i32 - sy as i32) as u32; // Y-up world coords
-
-                    // sample the background if inside its bounds
-                    if world_x < bg_w && world_y < bg_h {
-                        let p = bg.get_pixel(world_x, world_y).0;
-                        frame.push((p[0], p[1], p[2], p[3]));
-                    } else {
-                        frame.push(DEFAULT_BACKGROUND_COLOR);
-                    }
-                }
-            }
-        } else {
-            // no background image: fill with default color
-            frame.resize((width * height) as usize, DEFAULT_BACKGROUND_COLOR);
-        }
-
+        let mut frame: Vec<(u8, u8, u8, u8)> = make_init_frame(self.background);
         // find all oobjects with sprites that intersect with camera object
         let mut renderable_objs = HashMap::<usize, Renderable>::new();
         // TODO: what happens when two objects have the same z?
