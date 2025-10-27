@@ -24,12 +24,12 @@ pub trait Object {
 }
 
 pub struct GameObject {
-    pub components: Vec<Box<dyn Component>>,
+    pub components: Vec<Box<dyn Component + Send + Sync>>,
     pub position: Position,
 }
 
 impl GameObject {
-    pub fn new(components: Vec<Box<dyn Component>>, position: Position) -> Self {
+    pub fn new(components: Vec<Box<dyn Component + Send + Sync>>, position: Position) -> Self {
         let go = GameObject {
             components,
             position,

@@ -6,8 +6,10 @@ use crate::Resolution;
 use pixels::{Pixels, SurfaceTexture};
 use winit::application::ApplicationHandler;
 use winit::dpi::LogicalSize;
+use winit::event::KeyEvent;
 use winit::event::WindowEvent;
 use winit::event_loop::{ActiveEventLoop, ControlFlow, EventLoop};
+use winit::keyboard::{KeyCode, PhysicalKey};
 use winit::window::{Window, WindowAttributes, WindowId};
 
 pub const WIDTH: u32 = 200;
@@ -27,22 +29,15 @@ impl<'a> Screen<'a> {
         Ok(Self { pixels })
     }
 
-    /*/// Draw new frame on Screen
-    pub fn update(&mut self, pixel_colors: &[u8]) {
-        let cur_frame = self.pixels.frame_mut();
-        cur_frame.copy_from_slice(pixel_colors);
-        let _ = self.pixels.render();
-    }*/
-
     /// Draw new RGB frame on Screen
-    pub fn update(&mut self, pixel_colors: &[u32]) {
+    pub fn update(&mut self, pixel_colors: &[(u8, u8, u8, u8)]) {
         let cur_frame = self.pixels.frame_mut();
-        for (i, &color) in pixel_colors.iter().enumerate() {
+        for (i, &(r, g, b, a)) in pixel_colors.iter().enumerate() {
             let base = i * 4;
-            cur_frame[base] = ((color >> 16) & 0xFF) as u8; // red
-            cur_frame[base + 1] = ((color >> 8) & 0xFF) as u8; // green
-            cur_frame[base + 2] = (color & 0xFF) as u8; // blue
-            cur_frame[base + 3] = 0xFF;
+            cur_frame[base] = r;
+            cur_frame[base + 1] = g;
+            cur_frame[base + 2] = b;
+            cur_frame[base + 3] = a;
         }
         let _ = self.pixels.render();
     }
@@ -55,29 +50,33 @@ pub struct App {
     /// Screen for representing the game inside the window
     screen: Option<Screen<'static>>,
     /// Pixel colors provided by Renderer
-    pixel_data: Arc<RwLock<Vec<u32>>>,
+    pixel_data: Arc<RwLock<Vec<(u8, u8, u8, u8)>>>,
+    /// currently pressed key for Engine
+    pub(crate) key_pressed: Arc<RwLock<Option<KeyCode>>>,
 
-    /// Current FPS accumulator (probably delete later)
+    /// Currrent FPS accumulator (probably delete later)
     frame_count: u32,
-    /// For FPS competition (probably delete later)
+    /// For FPS compitation (probably delete later)
     last_fps_report_time: Instant,
 }
 
 /// Basic App implementation
 impl App {
     pub fn new(
-        pixel_data: Arc<RwLock<Vec<u32>>>,
+        pixel_data: Arc<RwLock<Vec<(u8, u8, u8, u8)>>>,
         window: Arc<RwLock<Option<Arc<Window>>>>,
     ) -> Self {
         App {
             screen: None,
             pixel_data,
             window,
+            key_pressed: Arc::new(RwLock::new(None)),
 
             frame_count: 0,
             last_fps_report_time: Instant::now(),
         }
     }
+    pub fn run(&mut self) {}
 }
 
 impl ApplicationHandler for App {
@@ -146,6 +145,23 @@ impl ApplicationHandler for App {
                     self.last_fps_report_time = Instant::now();
                 }
             }
+
+            WindowEvent::KeyboardInput {
+                event:
+                    KeyEvent {
+                        physical_key: PhysicalKey::Code(key_code),
+                        state,
+                        ..
+                    },
+                ..
+            } => {
+                let mut key = self.key_pressed.write().unwrap();
+                if state.is_pressed() {
+                    *key = Some(key_code);
+                } else {
+                    *key = None;
+                }
+            }
             _ => (),
         }
     }
@@ -153,19 +169,21 @@ impl ApplicationHandler for App {
 
 /// To run example, replace /bin/main.rs with:
 /// rust
-/// use rusty_ache::screen::utils::example;
+///use rusty_ache::screen::utils::example;
 ///
-/// fn main() {
-///     example();
-/// }
+///fn main() {
+///    example();
+///}
 ///
 pub fn example() {
     let initial_resolution = Resolution {
         width: WIDTH,
         height: HEIGHT,
     };
-    let initial_pixels =
-        vec![0x000000u32; (initial_resolution.width * initial_resolution.height) as usize];
+    let initial_pixels = vec![
+        (0x00, 0x00, 0x00, 0xFF);
+        (initial_resolution.width * initial_resolution.height) as usize
+    ];
 
     let shared_pixel_data = Arc::new(RwLock::new(initial_pixels));
     let shared_window = Arc::new(RwLock::new(None));
@@ -188,13 +206,17 @@ pub fn example() {
         let screen_size = (WIDTH * HEIGHT) as usize;
         loop {
             let new_color = (frame_count * 0x10001 + 0x010000) % 0xFFFFFF; // gradient for testing
+            let r = ((new_color >> 16) & 0xFF) as u8;
+            let g = ((new_color >> 8) & 0xFF) as u8;
+            let b = (new_color & 0xFF) as u8;
+            let a = 0xFF as u8;
             {
                 let mut pixels = shared_pixel_data_clone
                     .write()
                     .expect("Producer couldn't get lock to write new pixel data into App");
 
                 for i in 0..screen_size {
-                    pixels[i] = new_color; // recolor all pixels into new color
+                    pixels[i] = (r, g, b, a); // recolor all pixels into new color
                 }
             }
             window_arc.request_redraw();
@@ -205,5 +227,65 @@ pub fn example() {
     let event_loop = EventLoop::new().unwrap();
     event_loop.set_control_flow(ControlFlow::Wait);
     let mut app = App::new(shared_pixel_data, shared_window);
+    let _ = event_loop.run_app(&mut app);
+}
+
+pub fn example_keys() {
+    let initial_resolution = Resolution {
+        width: WIDTH,
+        height: HEIGHT,
+    };
+    const DEFAULT_COLOR: (u8, u8, u8, u8) = (0xF5, 0xDE, 0xB3, 0xFF);
+    const RED: (u8, u8, u8, u8) = (0xFF, 0x00, 0x00, 0xFF);
+    const BLUE: (u8, u8, u8, u8) = (0x00, 0x00, 0xFF, 0xFF);
+    const GREEN: (u8, u8, u8, u8) = (0x00, 0xFF, 0x00, 0xFF);
+    const PURPLE: (u8, u8, u8, u8) = (0x80, 0x00, 0x80, 0xFF);
+    let initial_pixels =
+        vec![DEFAULT_COLOR; (initial_resolution.width * initial_resolution.height) as usize];
+
+    let shared_pixel_data = Arc::new(RwLock::new(initial_pixels));
+    let shared_window = Arc::new(RwLock::new(None));
+
+    let shared_pixel_data_clone = shared_pixel_data.clone();
+    let shared_window_clone = shared_window.clone();
+
+    let mut app = App::new(shared_pixel_data, shared_window);
+    let key_pressed_clone = app.key_pressed.clone();
+    // Producer thread
+    thread::spawn(move || {
+        let window_arc: Arc<Window> = loop {
+            if let Some(arc) = shared_window_clone.read().unwrap().clone() {
+                break arc;
+            }
+            thread::sleep(Duration::from_millis(100));
+        };
+
+        //dbg!("Producer has started");
+
+        let screen_size = (WIDTH * HEIGHT) as usize;
+        loop {
+            let color = match *key_pressed_clone.read().unwrap() {
+                Some(KeyCode::KeyW) => RED,
+                Some(KeyCode::KeyA) => BLUE,
+                Some(KeyCode::KeyS) => GREEN,
+                Some(KeyCode::KeyD) => PURPLE,
+                _ => DEFAULT_COLOR,
+            };
+            {
+                let mut pixels = shared_pixel_data_clone
+                    .write()
+                    .expect("Producer couldn't lock pixel data");
+
+                for p in pixels.iter_mut().take(screen_size) {
+                    *p = color;
+                }
+            }
+            window_arc.request_redraw();
+        }
+    });
+
+    let event_loop = EventLoop::new().unwrap();
+    event_loop.set_control_flow(ControlFlow::Wait);
+
     let _ = event_loop.run_app(&mut app);
 }

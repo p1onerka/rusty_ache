@@ -21,7 +21,7 @@ impl GameObjectFactory {
 
     pub fn create_object(
         &mut self,
-        components: Vec<Box<dyn Component>>,
+        components: Vec<Box<dyn Component + Send + Sync>>,
         position: Position,
     ) -> (usize, GameObject) {
         if self.uids.is_empty() && self.max_objects == self.allocated_objects {
@@ -52,7 +52,11 @@ impl GameObjectManager {
         }
     }
 
-    pub fn add_game_object(&mut self, components: Vec<Box<dyn Component>>, position: Position) {
+    pub fn add_game_object(
+        &mut self,
+        components: Vec<Box<dyn Component + Send + Sync>>,
+        position: Position,
+    ) {
         let (uid, object) = self.factory.create_object(components, position);
         self.game_objects.insert(uid, object);
     }

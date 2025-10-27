@@ -18,7 +18,7 @@ pub struct Scene {
 impl Scene {
     pub fn new(
         objects: Vec<GameObject>,
-        main_components: Vec<Box<dyn Component>>,
+        main_components: Vec<Box<dyn Component + Send + Sync>>,
         main_position: Position,
     ) -> Self {
         let mut obj_manager = GameObjectManager::new(256);

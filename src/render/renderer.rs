@@ -30,6 +30,7 @@ pub struct Rectangle {
 /// * Choosing which pixels to recolor based on info from Engine.
 /// * Forming recolored frame and sending it to Screen.
 pub struct Renderer {
+    frame_ready: bool,
     resolution: Resolution,
     background: Option<DynamicImage>,
     prev_frame: Vec<(u8, u8, u8, u8)>,
@@ -46,6 +47,7 @@ impl Renderer {
     ) -> Self {
         let background_clone = background.clone();
         Renderer {
+            frame_ready: false,
             resolution,
             background,
             prev_frame: make_init_frame(background_clone),
@@ -71,14 +73,67 @@ impl Renderer {
         None
     }
 
-    fn recolor_frame() {}
+    fn blit_sprite(
+        frame: &mut Vec<(u8, u8, u8, u8)>,
+        sprite: &DynamicImage,
+        visible_area: &Rectangle,
+        position: (i32, i32),
+        camera_top: (i32, i32),
+        frame_size: (i32, i32),
+    ) {
+        let (frame_w, frame_h) = frame_size;
+
+        // loop over world coordinates of visible area
+        let (sprite_w, sprite_h) = sprite.dimensions();
+
+        for wy in visible_area.bot_right.1..visible_area.top_left.1 {
+            for wx in visible_area.top_left.0..visible_area.bot_right.0 {
+                // map world -> sprite coordinates
+                if wx < position.0 || wy > position.1 {
+                    continue;
+                }
+                let sprite_x = wx - position.0;
+                let sprite_y = position.1 - wy;
+
+                if sprite_x >= sprite_w as i32 || sprite_y >= sprite_h as i32 {
+                    continue;
+                }
+
+                let px = sprite.get_pixel(sprite_x.try_into().unwrap(), sprite_y as u32);
+                let src = px.0;
+
+                // skip transparent pixels
+                if src[3] == 0 {
+                    continue;
+                }
+
+                // map world -> screen coordinates
+                let sx_i = wx as i32 - camera_top.0 as i32;
+                let sy_i = camera_top.1 as i32 - wy as i32;
+
+                if sx_i < 0 || sy_i < 0 {
+                    continue;
+                }
+                let sx = sx_i as u32;
+                let sy = sy_i as u32;
+
+                if sx >= frame_w as u32 || sy >= frame_h as u32 {
+                    continue;
+                }
+
+                // fully opaque → just overwrite
+                let idx = (sy * frame_w as u32 + sx) as usize;
+                frame[idx] = (src[0], src[1], src[2], src[3]);
+            }
+        }
+    }
 
     /// Form new frame based on previous one and info from Engine
-    pub(crate) fn render(&self) {
+    pub(crate) fn render(&mut self) {
         println!("Starting render");
         // find cam rectangle
         let main_object = &self.scene_manager.active_scene.main_object;
-
+        let mut frame: Vec<(u8, u8, u8, u8)> = make_init_frame(self.background.clone());
         println!("Main object collected");
         let renderable = self.scene_manager.init_active_scene();
 
@@ -107,22 +162,20 @@ impl Renderer {
                 "{} {} {} {}",
                 im_rect.bot_right.0, im_rect.bot_right.1, im_rect.top_left.0, im_rect.top_left.1
             );
-        }
-
-        // sort objects by z coord in descending order
-        let mut z_sorted: Vec<u32> = uids_by_z.keys().cloned().collect();
-        z_sorted.sort();
-        let objs_sorted_by_z: Vec<usize> = z_sorted
-            .iter()
-            .map(|key| uids_by_z.get(key).cloned().unwrap())
-            .collect();
-
-        // distant objects should be rendered first, so near ones can overlap them
-        for obj in objs_sorted_by_z {
-            // TODO
+            Self::blit_sprite(
+                &mut frame,
+                img,
+                &im_rect,
+                (pos.x, pos.y),
+                (main_object.position.x, main_object.position.y),
+                (self.resolution.width as i32, self.resolution.height as i32),
+            );
+            self.prev_frame = frame.clone();
         }
     }
 
     /// Emit new frame to Screen
-    fn emit() {}
+    pub fn emit(&mut self) -> Option<Vec<(u8, u8, u8, u8)>> {
+        return Some(self.prev_frame.clone());
+    }
 }
