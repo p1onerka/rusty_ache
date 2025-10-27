@@ -45,7 +45,7 @@ impl Engine for GameEngine {
         GameEngine {
             config,
             scene_manager: SceneManager::new(scene),
-            render: Renderer::new(res, (0, 0, 0)),
+            render: Renderer::new(res, None),
         }
     }
 }

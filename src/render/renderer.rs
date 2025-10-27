@@ -11,6 +11,10 @@ use crate::screen::{HEIGHT, WIDTH};
 
 use self::sprite::Sprite;
 
+use super::utils::make_init_frame;
+
+pub const DEFAULT_BACKGROUND_COLOR: (u8, u8, u8, u8) = (245, 245, 220, 255);
+
 pub struct Renderable {
     pub sprite: DynamicImage,
     pub visible_area: Rectangle,
@@ -28,15 +32,18 @@ pub struct Rectangle {
 /// * Forming recolored frame and sending it to Screen.
 pub struct Renderer {
     resolution: Resolution,
-    background: image::Rgb<u8>,
+    background: Option<DynamicImage>,
+    prev_frame: Vec<(u8, u8, u8, u8)>,
 }
 
 impl Renderer {
     // TODO: add here first emition of image into Screen. it will contain only slice of background
-    pub(crate) fn new(resolution: Resolution, background: (u8, u8, u8)) -> Self {
+    pub(crate) fn new(resolution: Resolution, background: Option<DynamicImage>) -> Self {
+        let background_clone = background.clone();
         Renderer {
             resolution,
-            background: image::Rgb([background.0, background.1, background.2]),
+            background: background,
+            prev_frame: make_init_frame(background_clone),
         }
     }
 
@@ -58,6 +65,10 @@ impl Renderer {
         } else {
             return None;
         }
+    }
+
+    fn recolor_frame() {
+
     }
 
     /// Form new frame based on previous one and info from Engine
