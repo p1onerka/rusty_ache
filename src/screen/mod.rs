@@ -57,9 +57,9 @@ pub struct App {
     /// Pixel colors provided by Renderer
     pixel_data: Arc<RwLock<Vec<u32>>>,
 
-    /// Currrent FPS accumulator (probably delete later)
+    /// Current FPS accumulator (probably delete later)
     frame_count: u32,
-    /// For FPS compitation (probably delete later)
+    /// For FPS competition (probably delete later)
     last_fps_report_time: Instant,
 }
 
@@ -152,13 +152,13 @@ impl ApplicationHandler for App {
 }
 
 /// To run example, replace /bin/main.rs with:
-/// ```rust
-///use rusty_ache::screen::utils::example;
+/// rust
+/// use rusty_ache::screen::utils::example;
 ///
-///fn main() {
-///    example();
-///}
-/// ```
+/// fn main() {
+///     example();
+/// }
+///
 pub fn example() {
     let initial_resolution = Resolution {
         width: WIDTH,

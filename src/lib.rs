@@ -8,3 +8,9 @@ pub struct Resolution {
     width: u32,
     height: u32,
 }
+
+impl Resolution {
+    pub fn new(width: u32, height: u32) -> Self {
+        Self { width, height }
+    }
+}

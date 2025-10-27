@@ -5,17 +5,17 @@ use std::collections::HashMap;
 use std::ptr::read_unaligned;
 
 use crate::Resolution;
-use crate::engine::scene::game_object::components::sprite;
+use crate::engine::scene::game_object::components::sprite::Sprite;
 use crate::engine::scene::game_object::{GameObject, Position};
+use crate::engine::scene_manager::SceneManager;
 use crate::screen::{HEIGHT, WIDTH};
-
-use self::sprite::Sprite;
 
 use super::utils::make_init_frame;
 
 pub const DEFAULT_BACKGROUND_COLOR: (u8, u8, u8, u8) = (245, 245, 220, 255);
 
 pub struct Renderable {
+    pub uid: u32,
     pub sprite: DynamicImage,
     pub visible_area: Rectangle,
     pub position: Position,
@@ -33,18 +33,24 @@ pub struct Renderer {
     resolution: Resolution,
     background: Option<DynamicImage>,
     prev_frame: Vec<(u8, u8, u8, u8)>,
-    renderable: HashMap<usize, Renderable>,
+    renderable: Vec<Renderable>,
+    pub(crate) scene_manager: SceneManager,
 }
 
 impl Renderer {
     // TODO: add here first edition of image into Screen. it will contain only slice of background
-    pub(crate) fn new(resolution: Resolution, background: Option<DynamicImage>) -> Self {
+    pub(crate) fn new(
+        resolution: Resolution,
+        background: Option<DynamicImage>,
+        scene_manager: SceneManager,
+    ) -> Self {
         let background_clone = background.clone();
         Renderer {
             resolution,
             background,
             prev_frame: make_init_frame(background_clone),
-            renderable: HashMap::new(),
+            renderable: Vec::new(),
+            scene_manager,
         }
     }
 
@@ -68,20 +74,24 @@ impl Renderer {
     fn recolor_frame() {}
 
     /// Form new frame based on previous one and info from Engine
-    fn render(&self, camera: GameObject) {
+    pub(crate) fn render(&self) {
         // find cam rectangle
+        let main_object = &self.scene_manager.active_scene.main_object;
+        let renderable = self.scene_manager.init_active_scene();
         let camera_rect = Rectangle {
-            top_left: (camera.position.x, camera.position.y),
-            bot_right: (camera.position.x + WIDTH, camera.position.y - HEIGHT),
+            top_left: (main_object.position.x, main_object.position.y),
+            bot_right: (
+                main_object.position.x + WIDTH,
+                main_object.position.y - HEIGHT,
+            ),
         };
 
         // TODO: what happens when two objects have the same z?
         let uids_by_z = HashMap::<u32, usize>::new();
-        for obj in self.renderable.values() {
+        for (obj, img) in renderable {
             let pos = &obj.position;
-            let image = &obj.sprite;
 
-            let im_size = image.dimensions();
+            let im_size = img.dimensions();
             let im_bot_right = (pos.x + im_size.0, pos.y - im_size.1);
             let im_rect = Rectangle {
                 top_left: (obj.position.x, obj.position.y),
