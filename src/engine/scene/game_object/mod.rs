@@ -1,4 +1,4 @@
-use crate::engine::scene::game_object::components::{Component, ComponentError};
+use crate::engine::scene::game_object::components::{Component, ComponentError, ComponentType};
 pub(crate) use crate::engine::scene::game_object::position::Position;
 
 pub mod components;
@@ -30,12 +30,20 @@ pub struct GameObject {
 
 impl Object for GameObject {
     fn new(components: Vec<Box<dyn Component>>, position: Position) -> Self {
+        for component in &components {
+            if component.get_component_type() == ComponentType::Sprite {
+                component.get_sprite_unchecked();
+            }
+        }
         GameObject {
             components,
             position,
         }
     }
     fn add_component(&mut self, component: Box<dyn Component>) -> Result<(), GameObjectError> {
+        if component.get_component_type() == ComponentType::Sprite {
+            component.get_sprite_unchecked();
+        }
         self.components.push(component);
         Ok(())
     }
