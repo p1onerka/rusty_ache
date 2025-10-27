@@ -11,7 +11,12 @@ use crate::screen::{HEIGHT, WIDTH};
 
 use self::sprite::Sprite;
 
-pub trait Renderable {}
+pub struct Renderable {
+    pub sprite: DynamicImage,
+    pub visible_area: Rectangle,
+    pub position: (u32, u32),
+    pub remoteness: u32,
+}
 
 pub struct Rectangle {
     pub top_left: (u32, u32),
@@ -38,8 +43,8 @@ impl Renderer {
     /// Find intersection of two rectangulars. Is used in render to find what part of object (if any)
     /// should be rendered with current camera position
     fn find_intersection(
-        fst: Rectangle,
-        snd: Rectangle,
+        fst: &Rectangle,
+        snd: &Rectangle,
     ) -> Option<Rectangle> {
         let left = fst.top_left.0.max(snd.top_left.0);
         let right = fst.bot_right.0.min(snd.bot_right.0);
@@ -60,35 +65,48 @@ impl Renderer {
         // find cam rectangle
         let camera_rect = Rectangle {
             top_left: (camera.position.x, camera.position.y),
-            bot_right: (camera.position.x + WIDTH, camera.position.y + HEIGHT),
+            bot_right: (camera.position.x + WIDTH, camera.position.y - HEIGHT),
         };
 
-        // find all rectangles of sprites
-        let mut objs_rects = HashMap::<usize, (Rectangle, DynamicImage)>::new();
+        // find all oobjects with sprites that intersect with camera object
+        let mut renderable_objs = HashMap::<usize, Renderable>::new();
+        // TODO: what happens when two objects have the same z?
+        let mut uids_by_z = HashMap::<u32, usize>::new();
         for obj in objs {
             let pos = &obj.position;
             for component in &obj.components {
                 if let Some(sprite) = component.as_any().downcast_ref::<Sprite>() {
                     if let Some(image) = &sprite.image {
                         let im_size = image.dimensions();
-                        let im_bot_right = (pos.x + im_size.0, pos.y + im_size.1);
+                        let im_bot_right = (pos.x + im_size.0, pos.y - im_size.1);
                         let im_rect = Rectangle {
                             top_left: (obj.position.x, obj.position.y),
                             bot_right: im_bot_right,
                         };
-                        let im = image.clone();
-                        objs_rects.insert(obj.uid, (im_rect, im));
+                        if let Some(intersection) = Self::find_intersection(&camera_rect, &im_rect) {
+                            let im = image.clone();
+                            let renderable = Renderable {sprite: im, visible_area: intersection, position: (pos.x, pos.y), remoteness: pos.z};
+                            renderable_objs.insert(obj.uid, renderable);
+                            uids_by_z.insert(pos.z, obj.uid);
+                        }
                     }
                 }
             }
         }
 
-        // find camera & objs intersections. basically, who will be rendered
-        let mut objs_intersections = HashMap::<usize, Rectangle>::new();
+        // sort objects by z coord in descending order
+        let mut z_sorted: Vec<u32> = uids_by_z.keys().cloned().collect();
+        z_sorted.sort();
+        let mut objs_sorted_by_z: Vec<usize> = z_sorted
+        .iter()
+        .map(|key| uids_by_z.get(key).cloned().unwrap())
+        .collect();
 
-        // sort objects by z coord in descending order. 
         // distant objects should be rendered first, so near ones can overlap them
-        let mut objs_sorted_by_z = Vec::<usize>::new();
+        for obj in objs_sorted_by_z {
+            // TODO
+        }
+        
     }
 
     /// Emit new frame to Screen
