@@ -3,9 +3,9 @@ use crate::engine::scene::game_object::{GameObject, Object, Position};
 use crate::engine::scene::object_manager::GameObjectManager;
 use crate::render::renderer::{Rectangle, Renderable};
 use crate::screen::Screen;
+use image::DynamicImage;
 use std::cmp::PartialEq;
 use std::collections::HashMap;
-use image::DynamicImage;
 
 pub mod game_object;
 mod object_manager;
@@ -42,7 +42,8 @@ impl Scene {
         for obj in self.manager.game_objects.values() {
             for component in obj.components.iter() {
                 if component.get_component_type() == ComponentType::Sprite {
-                    renderable_objects.push((obj, &component.get_sprite_unchecked().as_ref().unwrap()));
+                    renderable_objects
+                        .push((obj, &component.get_sprite_unchecked().as_ref().unwrap()));
                 }
             }
         }

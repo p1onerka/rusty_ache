@@ -1,6 +1,6 @@
-use image::DynamicImage;
 use crate::engine::scene::Scene;
 use crate::engine::scene::game_object::GameObject;
+use image::DynamicImage;
 
 pub struct SceneManager {
     pub(crate) active_scene: Scene,
