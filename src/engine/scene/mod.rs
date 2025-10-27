@@ -15,11 +15,6 @@ pub struct Scene {
     pub main_object: GameObject,
 }
 
-impl PartialEq for ComponentType {
-    fn eq(&self, other: &Self) -> bool {
-        if self == other { true } else { false }
-    }
-}
 
 impl Scene {
     pub fn new(
@@ -39,13 +34,18 @@ impl Scene {
 
     pub fn init(&self) -> Vec<(&GameObject, &DynamicImage)> {
         let mut renderable_objects: Vec<(&GameObject, &DynamicImage)> = vec![];
+        println!("Starting scene init");
         for obj in self.manager.game_objects.values() {
             for component in obj.components.iter() {
+                println!("Iterating over component");
                 if component.get_component_type() == ComponentType::Sprite {
+                    println!("Pushing sprite");
                     renderable_objects
                         .push((obj, &component.get_sprite_unchecked().as_ref().unwrap()));
+                    println!("Pushed sprite");
                 }
             }
+            println!("Object collected");
         }
         renderable_objects.sort_by(|a, b| a.0.position.z.cmp(&b.0.position.z));
         renderable_objects

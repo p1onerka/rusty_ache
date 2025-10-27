@@ -4,7 +4,7 @@ use image::DynamicImage;
 use std::any::Any;
 use std::rc::Rc;
 
-pub(crate) mod sprite;
+pub mod sprite;
 mod velocity;
 
 pub enum ComponentError {
@@ -13,6 +13,7 @@ pub enum ComponentError {
     UnknownError(String),
 }
 
+#[derive(Eq, PartialEq, Clone)]
 pub enum ComponentType {
     Sprite,
     Velocity,

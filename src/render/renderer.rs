@@ -22,8 +22,8 @@ pub struct Renderable {
 }
 
 pub struct Rectangle {
-    pub top_left: (u32, u32),
-    pub bot_right: (u32, u32),
+    pub top_left: (i32, i32),
+    pub bot_right: (i32, i32),
 }
 
 /// A struct describing entity for:
@@ -75,16 +75,22 @@ impl Renderer {
 
     /// Form new frame based on previous one and info from Engine
     pub(crate) fn render(&self) {
+        println!("Starting render");
         // find cam rectangle
         let main_object = &self.scene_manager.active_scene.main_object;
+
+        println!("Main object collected");
         let renderable = self.scene_manager.init_active_scene();
+
+        println!("Renderable collected");
         let camera_rect = Rectangle {
             top_left: (main_object.position.x, main_object.position.y),
             bot_right: (
-                main_object.position.x + WIDTH,
-                main_object.position.y - HEIGHT,
+                main_object.position.x + WIDTH as i32,
+                main_object.position.y - HEIGHT as i32,
             ),
         };
+        println!("{} {}", main_object.position.y, HEIGHT);
 
         // TODO: what happens when two objects have the same z?
         let uids_by_z = HashMap::<u32, usize>::new();
@@ -92,11 +98,12 @@ impl Renderer {
             let pos = &obj.position;
 
             let im_size = img.dimensions();
-            let im_bot_right = (pos.x + im_size.0, pos.y - im_size.1);
+            let im_bot_right = (pos.x + im_size.0 as i32, pos.y - im_size.1 as i32);
             let im_rect = Rectangle {
                 top_left: (obj.position.x, obj.position.y),
                 bot_right: im_bot_right,
             };
+            println!("{} {} {} {}", im_rect.bot_right.0, im_rect.bot_right.1, im_rect.top_left.0, im_rect.top_left.1);
         }
 
         // sort objects by z coord in descending order
