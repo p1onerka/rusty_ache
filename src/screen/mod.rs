@@ -12,8 +12,8 @@ use winit::event_loop::{ActiveEventLoop, ControlFlow, EventLoop};
 use winit::keyboard::{KeyCode, PhysicalKey};
 use winit::window::{Window, WindowAttributes, WindowId};
 
-pub const WIDTH: u32 = 200;
-pub const HEIGHT: u32 = 200;
+pub const WIDTH: u32 = 300;
+pub const HEIGHT: u32 = 300;
 
 /// Struct representing Screen, on which a game will be drawn
 pub struct Screen<'a> {

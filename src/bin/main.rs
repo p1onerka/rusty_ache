@@ -7,12 +7,13 @@ use rusty_ache::engine::scene::game_object::GameObject;
 use rusty_ache::engine::scene::game_object::components::sprite::{Sprite};
 use rusty_ache::engine::scene::game_object::position::Position;
 use rusty_ache::engine::{Engine, GameEngine};
+use rusty_ache::screen::{HEIGHT, WIDTH};
 use rusty_ache::engine::scene::game_object::components::script::Script;
 use rusty_ache::screen::{example, example_keys};
 
 fn main() {
     let mut engine = GameEngine::new(
-        Box::new(EngineConfig::new(Resolution::new(200, 200))),
+        Box::new(EngineConfig::new(Resolution::new(WIDTH, HEIGHT))),
         Scene::new(
             vec![
                 GameObject::new(
