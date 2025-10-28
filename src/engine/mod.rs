@@ -101,7 +101,7 @@ impl Engine for GameEngine {
                     Some(KeyCode::KeyD) => (1, 0),
                     _ => (0, 0),
                 };
-                println!("{:?}", vector_move);
+                //println!("{:?}", vector_move);
                 renderer
                     .write()
                     .unwrap()
