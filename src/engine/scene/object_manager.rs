@@ -29,12 +29,12 @@ impl GameObjectFactory {
         } else if self.uids.is_empty() == false {
             let uid = self.uids.iter().next().unwrap().clone();
             self.uids.remove(&uid);
-            return (uid, GameObject::new(components, position));
+            return (uid, GameObject::new(components, None, position));
         }
         self.allocated_objects += 1;
         (
             self.allocated_objects,
-            GameObject::new(components, position),
+            GameObject::new(components, None, position),
         )
     }
 }

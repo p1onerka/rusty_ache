@@ -1,6 +1,7 @@
 //! A struct describing any entity that can be rendered
 
 use image::{DynamicImage, GenericImageView};
+use std::cmp::{max, min};
 use std::collections::HashMap;
 use std::ptr::read_unaligned;
 
@@ -123,7 +124,14 @@ impl Renderer {
 
                 // fully opaque → just overwrite
                 let idx = (sy * frame_w as u32 + sx) as usize;
-                frame[idx] = (src[0], src[1], src[2], src[3]);
+                let mut shadowed = src;
+                if (src[0] == 0 && src[1] == 0 && src[2] == 0 && src[3] != 255) {
+                    shadowed[0] = frame[idx].0.saturating_sub(src[3]);
+                    shadowed[1] = frame[idx].1.saturating_sub(src[3]);
+                    shadowed[2] = frame[idx].2.saturating_sub(src[3]);
+                }
+
+                frame[idx] = (shadowed[0], shadowed[1], shadowed[2], shadowed[3]);
             }
         }
     }
@@ -149,13 +157,18 @@ impl Renderer {
 
         // TODO: what happens when two objects have the same z?
         let uids_by_z = HashMap::<u32, usize>::new();
-        for (obj, img) in renderable {
-            let pos = &obj.position;
+        for (obj, img, offset) in renderable {
+            let pos = Position {
+                x: obj.position.x + offset.0,
+                y: obj.position.y + offset.1,
+                z: obj.position.z,
+                is_relative: obj.position.is_relative,
+            };
 
             let im_size = img.dimensions();
             let im_bot_right = (pos.x + im_size.0 as i32, pos.y - im_size.1 as i32);
             let im_rect = Rectangle {
-                top_left: (obj.position.x, obj.position.y),
+                top_left: (pos.x, pos.y),
                 bot_right: im_bot_right,
             };
             //println!(
