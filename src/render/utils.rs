@@ -27,7 +27,7 @@ pub fn make_init_frame(image: Option<DynamicImage>) -> Vec<(u8, u8, u8, u8)> {
         Some(image) => {
             let (width, height) = image.dimensions();
             if width < WIDTH || height < HEIGHT {
-                panic!(
+                eprintln!(
                     "Error: background image is smaller than screen size; Initialized with default background"
                 );
                 make_init_default_background()

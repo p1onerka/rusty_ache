@@ -1,13 +1,10 @@
 //! A struct describing any entity that can be rendered
 
 use image::{DynamicImage, GenericImageView};
-use std::cmp::{max, min};
 use std::collections::HashMap;
-use std::ptr::read_unaligned;
 
 use crate::Resolution;
-use crate::engine::scene::game_object::components::sprite::Sprite;
-use crate::engine::scene::game_object::{GameObject, Position};
+use crate::engine::scene::game_object::Position;
 use crate::engine::scene_manager::SceneManager;
 use crate::screen::{HEIGHT, WIDTH};
 
@@ -31,11 +28,11 @@ pub struct Rectangle {
 /// * Choosing which pixels to recolor based on info from Engine.
 /// * Forming recolored frame and sending it to Screen.
 pub struct Renderer {
-    frame_ready: bool,
+    //frame_ready: bool,
     resolution: Resolution,
     background: Option<DynamicImage>,
     prev_frame: Vec<(u8, u8, u8, u8)>,
-    renderable: Vec<Renderable>,
+    //renderable: Vec<Renderable>,
     pub scene_manager: SceneManager,
 }
 
@@ -48,18 +45,18 @@ impl Renderer {
     ) -> Self {
         let background_clone = background.clone();
         Renderer {
-            frame_ready: false,
+            //frame_ready: false,
             resolution,
             background,
             prev_frame: make_init_frame(background_clone),
-            renderable: Vec::new(),
+            //renderable: Vec::new(),
             scene_manager,
         }
     }
 
     /// Find intersection of two rectangular. Is used in render to find what part of object (if any)
     /// should be rendered with current camera position
-    fn find_intersection(fst: &Rectangle, snd: &Rectangle) -> Option<Rectangle> {
+    fn _find_intersection(fst: &Rectangle, snd: &Rectangle) -> Option<Rectangle> {
         let left = fst.top_left.0.max(snd.top_left.0);
         let right = fst.bot_right.0.min(snd.bot_right.0);
         let top = fst.top_left.1.min(snd.top_left.1);
@@ -125,7 +122,7 @@ impl Renderer {
                 // fully opaque → just overwrite
                 let idx = (sy * frame_w as u32 + sx) as usize;
                 let mut shadowed = src;
-                if (src[0] == 0 && src[1] == 0 && src[2] == 0 && src[3] != 255) {
+                if src[0] == 0 && src[1] == 0 && src[2] == 0 && src[3] != 255 {
                     shadowed[0] = frame[idx].0.saturating_sub(src[3]);
                     shadowed[1] = frame[idx].1.saturating_sub(src[3]);
                     shadowed[2] = frame[idx].2.saturating_sub(src[3]);
@@ -138,15 +135,15 @@ impl Renderer {
 
     /// Form new frame based on previous one and info from Engine
     pub(crate) fn render(&mut self) {
-        println!("Starting render");
+        //println!("Starting render");
         // find cam rectangle
         let main_object = &self.scene_manager.active_scene.main_object;
         let mut frame: Vec<(u8, u8, u8, u8)> = make_init_frame(self.background.clone());
-        println!("Main object collected");
+        //println!("Main object collected");
         let renderable = self.scene_manager.init_active_scene();
 
-        println!("Renderable collected");
-        let camera_rect = Rectangle {
+        //println!("Renderable collected");
+        let _camera_rect = Rectangle {
             top_left: (main_object.position.x, main_object.position.y),
             bot_right: (
                 main_object.position.x + WIDTH as i32,
@@ -156,7 +153,7 @@ impl Renderer {
         //println!("{} {}", main_object.position.y, HEIGHT);
 
         // TODO: what happens when two objects have the same z?
-        let uids_by_z = HashMap::<u32, usize>::new();
+        let _uids_by_z = HashMap::<u32, usize>::new();
         for (obj, img, offset) in renderable {
             let pos = Position {
                 x: obj.position.x + offset.0,

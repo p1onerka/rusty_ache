@@ -4,11 +4,12 @@ pub mod scene;
 pub mod scene_manager;
 
 use crate::Resolution;
-use crate::engine::config::{Config, EngineConfig};
+use crate::engine::config::Config;
 use crate::engine::scene::Scene;
 use crate::engine::scene_manager::SceneManager;
+use crate::render::renderer::DEFAULT_BACKGROUND_COLOR;
 use crate::render::renderer::Renderer;
-use crate::screen::{App, HEIGHT, Screen, WIDTH};
+use crate::screen::{App, HEIGHT, WIDTH};
 use std::io::Error;
 use std::sync::{Arc, RwLock};
 use std::thread;
@@ -30,7 +31,7 @@ pub trait Engine {
 }
 
 pub struct GameEngine {
-    config: Box<dyn Config + Send>,
+    //config: Box<dyn Config + Send>,
     render: Arc<RwLock<Renderer>>,
 }
 
@@ -38,7 +39,6 @@ impl Engine for GameEngine {
     fn set_active_scene(&mut self, new_scene: Scene) -> Result<(), Error> {
         self.render.write().unwrap().scene_manager = SceneManager::new(new_scene);
 
-        // Can return Err if scene isn't found. Not implemented.
         Ok(())
     }
 
@@ -53,7 +53,7 @@ impl Engine for GameEngine {
     {
         let res = config.get_resolution();
         GameEngine {
-            config,
+            //config,
             render: Arc::new(RwLock::from(Renderer::new(
                 res,
                 None,
@@ -67,13 +67,10 @@ impl Engine for GameEngine {
             width: WIDTH,
             height: HEIGHT,
         };
-        const DEFAULT_COLOR: (u8, u8, u8, u8) = (0xF5, 0xDE, 0xB3, 0xFF);
-        const RED: (u8, u8, u8, u8) = (0xFF, 0x00, 0x00, 0xFF);
-        const BLUE: (u8, u8, u8, u8) = (0x00, 0x00, 0xFF, 0xFF);
-        const GREEN: (u8, u8, u8, u8) = (0x00, 0xFF, 0x00, 0xFF);
-        const PURPLE: (u8, u8, u8, u8) = (0x80, 0x00, 0x80, 0xFF);
-        let initial_pixels =
-            vec![DEFAULT_COLOR; (initial_resolution.width * initial_resolution.height) as usize];
+        let initial_pixels = vec![
+            DEFAULT_BACKGROUND_COLOR;
+            (initial_resolution.width * initial_resolution.height) as usize
+        ];
 
         let shared_pixel_data = Arc::new(RwLock::new(initial_pixels));
         let shared_window = Arc::new(RwLock::new(None));

@@ -1,11 +1,7 @@
 use crate::engine::scene::game_object::components::{Component, ComponentType};
-use crate::engine::scene::game_object::{GameObject, Object, Position};
+use crate::engine::scene::game_object::{GameObject, Position};
 use crate::engine::scene::object_manager::GameObjectManager;
-use crate::render::renderer::{Rectangle, Renderable};
-use crate::screen::Screen;
 use image::DynamicImage;
-use std::cmp::PartialEq;
-use std::collections::HashMap;
 
 pub mod game_object;
 

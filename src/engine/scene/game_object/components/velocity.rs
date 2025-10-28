@@ -1,24 +1,22 @@
 use super::*;
-use crate::engine::scene::game_object::Object;
-use image::DynamicImage;
 
 pub struct Velocity {
-    x: usize,
-    y: usize,
-    component_type: ComponentType,
+    _x: usize,
+    _y: usize,
+    _component_type: ComponentType,
 }
 
 impl Velocity {
-    pub fn new() -> Self {
+    pub fn _new() -> Self {
         Velocity {
-            x: 0,
-            y: 0,
-            component_type: ComponentType::Velocity,
+            _x: 0,
+            _y: 0,
+            _component_type: ComponentType::Velocity,
         }
     }
-    pub fn update(&mut self, x: usize, y: usize) {
-        self.x = x;
-        self.y = y;
+    pub fn _update(&mut self, x: usize, y: usize) {
+        self._x = x;
+        self._y = y;
     }
 }
 

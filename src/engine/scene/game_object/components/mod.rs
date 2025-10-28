@@ -2,7 +2,6 @@
 
 use image::DynamicImage;
 use std::any::Any;
-use std::rc::Rc;
 
 pub mod sprite;
 mod velocity;

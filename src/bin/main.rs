@@ -1,15 +1,14 @@
-use image::{ImageFormat, ImageReader};
+use image::ImageReader;
 
 use rusty_ache::Resolution;
 use rusty_ache::engine::config::{Config, EngineConfig};
 use rusty_ache::engine::scene::Scene;
 use rusty_ache::engine::scene::game_object::GameObject;
-use rusty_ache::engine::scene::game_object::components::sprite::{Sprite};
+use rusty_ache::engine::scene::game_object::components::script::Script;
+use rusty_ache::engine::scene::game_object::components::sprite::Sprite;
 use rusty_ache::engine::scene::game_object::position::Position;
 use rusty_ache::engine::{Engine, GameEngine};
 use rusty_ache::screen::{HEIGHT, WIDTH};
-use rusty_ache::engine::scene::game_object::components::script::Script;
-use rusty_ache::screen::{example, example_keys};
 
 fn main() {
     let mut engine = GameEngine::new(
@@ -26,7 +25,8 @@ fn main() {
                         ),
                         None,
                         (0, 0),
-                    )) , ], None,
+                    ))],
+                    None,
                     Position {
                         x: 0,
                         y: 0,
@@ -50,7 +50,8 @@ fn main() {
                             (-7, 4),
                         )),
                         (0, 0),
-                    ))], None,
+                    ))],
+                    None,
                     Position {
                         x: 130,
                         y: -100,
@@ -74,7 +75,8 @@ fn main() {
                             (-7, 4),
                         )),
                         (0, 0),
-                    ))], None,
+                    ))],
+                    None,
                     Position {
                         x: 15,
                         y: -25,
@@ -122,10 +124,20 @@ impl Script for MyScript {
 
     fn action(&mut self, game_object: &mut GameObject) {
         if !self.is_downed {
-            game_object.position = Position {x: game_object.position.x, y: game_object.position.y - 1, z: game_object.position.z, is_relative: game_object.position.is_relative};
+            game_object.position = Position {
+                x: game_object.position.x,
+                y: game_object.position.y - 1,
+                z: game_object.position.z,
+                is_relative: game_object.position.is_relative,
+            };
             self.is_downed = true;
         } else {
-            game_object.position = Position {x: game_object.position.x, y: game_object.position.y + 1, z: game_object.position.z, is_relative: game_object.position.is_relative};
+            game_object.position = Position {
+                x: game_object.position.x,
+                y: game_object.position.y + 1,
+                z: game_object.position.z,
+                is_relative: game_object.position.is_relative,
+            };
             self.is_downed = false;
         }
     }
