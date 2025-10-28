@@ -1,4 +1,7 @@
+use std::cell::RefCell;
+use std::rc::Rc;
 use crate::engine::scene::game_object::components::{Component, ComponentError};
+use crate::engine::scene::game_object::components::script::Script;
 pub(crate) use crate::engine::scene::game_object::position::Position;
 
 pub mod components;
@@ -25,13 +28,15 @@ pub trait Object {
 
 pub struct GameObject {
     pub components: Vec<Box<dyn Component + Send + Sync>>,
+    pub script: Option<Box<dyn Script + Send + Sync>>,
     pub position: Position,
 }
 
 impl GameObject {
-    pub fn new(components: Vec<Box<dyn Component + Send + Sync>>, position: Position) -> Self {
+    pub fn new(components: Vec<Box<dyn Component + Send + Sync>>, script: Option<Box<dyn Script + Send + Sync>>, position: Position) -> Self {
         let go = GameObject {
             components,
+            script,
             position,
         };
         go
@@ -40,5 +45,10 @@ impl GameObject {
     pub fn add_position(&mut self, vec: (i32, i32)) {
         self.position.x = self.position.x + vec.0;
         self.position.y = self.position.y + vec.1;
+    }
+
+
+    pub fn run_action(&self) {
+
     }
 }

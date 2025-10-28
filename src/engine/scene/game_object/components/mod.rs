@@ -7,6 +7,8 @@ use std::rc::Rc;
 pub mod sprite;
 mod velocity;
 
+pub mod script;
+
 pub enum ComponentError {
     Exist(Box<dyn Component>),
     CannotApply(String),
@@ -17,6 +19,7 @@ pub enum ComponentError {
 pub enum ComponentType {
     Sprite,
     Velocity,
+    Action,
 }
 
 pub trait Component: Any {

@@ -8,6 +8,7 @@ use std::cmp::PartialEq;
 use std::collections::HashMap;
 
 pub mod game_object;
+
 mod object_manager;
 
 pub struct Scene {
@@ -27,7 +28,7 @@ impl Scene {
         }
         Scene {
             manager: obj_manager,
-            main_object: GameObject::new(main_components, main_position),
+            main_object: GameObject::new(main_components, None, main_position),
         }
     }
 
