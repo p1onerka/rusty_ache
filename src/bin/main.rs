@@ -14,12 +14,16 @@ fn main() {
         Scene::new(
             vec![
                 GameObject::new(
-                    vec![Box::new(Sprite::new(Some(
-                        ImageReader::open("src/bin/resources/command_center.png")
-                            .unwrap()
-                            .decode()
-                            .unwrap(),
-                    )))],
+                    vec![Box::new(Sprite::new(
+                        Some(
+                            ImageReader::open("src/bin/resources/command_center.png")
+                                .unwrap()
+                                .decode()
+                                .unwrap(),
+                        ),
+                        None,
+                        (0, 0),
+                    ))],
                     Position {
                         x: 0,
                         y: 0,
@@ -28,12 +32,22 @@ fn main() {
                     },
                 ),
                 GameObject::new(
-                    vec![Box::new(Sprite::new(Some(
-                        ImageReader::open("src/bin/resources/command_center.png")
-                            .unwrap()
-                            .decode()
-                            .unwrap(),
-                    )))],
+                    vec![Box::new(Sprite::new(
+                        Some(
+                            ImageReader::open("src/bin/resources/command_center.png")
+                                .unwrap()
+                                .decode()
+                                .unwrap(),
+                        ),
+                        Some((
+                            ImageReader::open("src/bin/resources/cc_shadow.png")
+                                .unwrap()
+                                .decode()
+                                .unwrap(),
+                            (-7, 4),
+                        )),
+                        (0, 0),
+                    ))],
                     Position {
                         x: 130,
                         y: -100,
@@ -42,12 +56,22 @@ fn main() {
                     },
                 ),
                 GameObject::new(
-                    vec![Box::new(Sprite::new(Some(
-                        ImageReader::open("src/bin/resources/command_center.png")
-                            .unwrap()
-                            .decode()
-                            .unwrap(),
-                    )))],
+                    vec![Box::new(Sprite::new(
+                        Some(
+                            ImageReader::open("src/bin/resources/command_center.png")
+                                .unwrap()
+                                .decode()
+                                .unwrap(),
+                        ),
+                        Some((
+                            ImageReader::open("src/bin/resources/cc_shadow.png")
+                                .unwrap()
+                                .decode()
+                                .unwrap(),
+                            (-7, 4),
+                        )),
+                        (0, 0),
+                    ))],
                     Position {
                         x: 15,
                         y: -25,
@@ -56,12 +80,22 @@ fn main() {
                     },
                 ),
             ],
-            vec![Box::new(Sprite::new(Some(
-                ImageReader::open("src/bin/resources/battlecruiser_main.png")
-                    .unwrap()
-                    .decode()
-                    .unwrap(),
-            )))],
+            vec![Box::new(Sprite::new(
+                Some(
+                    ImageReader::open("src/bin/resources/battlecruiser_main.png")
+                        .unwrap()
+                        .decode()
+                        .unwrap(),
+                ),
+                Some((
+                    ImageReader::open("src/bin/resources/bc_shadow.png")
+                        .unwrap()
+                        .decode()
+                        .unwrap(),
+                    (0, -10),
+                )),
+                (60, -60),
+            ))],
             Position {
                 x: -10,
                 y: 10,

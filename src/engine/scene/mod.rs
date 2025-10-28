@@ -31,22 +31,52 @@ impl Scene {
         }
     }
 
-    pub fn init(&self) -> Vec<(&GameObject, &DynamicImage)> {
-        let mut renderable_objects: Vec<(&GameObject, &DynamicImage)> = vec![];
+    pub fn init(&self) -> Vec<(&GameObject, &DynamicImage, (i32, i32))> {
+        let mut renderable_objects: Vec<(&GameObject, &DynamicImage, (i32, i32))> = vec![];
         for obj in self.manager.game_objects.values() {
             for component in obj.components.iter() {
                 if component.get_component_type() == ComponentType::Sprite {
-                    renderable_objects
-                        .push((obj, &component.get_sprite_unchecked().as_ref().unwrap()));
+                    match &component.get_shadow_unchecked() {
+                        None => {}
+                        Some(img) => {
+                            renderable_objects.push((
+                                obj,
+                                &img.0,
+                                (
+                                    component.get_sprite_offset_unchecked().unwrap().0 + &img.1.0,
+                                    component.get_sprite_offset_unchecked().unwrap().1 + &img.1.1,
+                                ),
+                            ));
+                        }
+                    };
+                    renderable_objects.push((
+                        obj,
+                        &component.get_sprite_unchecked().as_ref().unwrap(),
+                        component.get_sprite_offset_unchecked().unwrap(),
+                    ));
                 }
             }
         }
         renderable_objects.sort_by(|a, b| a.0.position.z.cmp(&b.0.position.z));
         for component in self.main_object.components.iter() {
             if component.get_component_type() == ComponentType::Sprite {
+                match &component.get_shadow_unchecked() {
+                    None => {}
+                    Some(img) => {
+                        renderable_objects.push((
+                            &self.main_object,
+                            &img.0,
+                            (
+                                component.get_sprite_offset_unchecked().unwrap().0 + &img.1.0,
+                                component.get_sprite_offset_unchecked().unwrap().1 + &img.1.1,
+                            ),
+                        ));
+                    }
+                };
                 renderable_objects.push((
                     &self.main_object,
                     &component.get_sprite_unchecked().as_ref().unwrap(),
+                    component.get_sprite_offset_unchecked().unwrap(),
                 ));
             }
         }
