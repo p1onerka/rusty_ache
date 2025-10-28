@@ -50,3 +50,57 @@ impl Scene {
         renderable_objects
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_new_scene_with_empty_objects_and_main() {
+        let scene = Scene::new(
+            vec![],
+            vec![],
+            Position { x: 1, y: 2, z: 3, is_relative: false }
+        );
+        assert_eq!(scene.manager.game_objects.len(), 0);
+        assert_eq!(scene.main_object.components.len(), 0);
+        assert_eq!(scene.main_object.position.x, 1);
+        assert_eq!(scene.main_object.position.y, 2);
+        assert_eq!(scene.main_object.position.z, 3);
+    }
+
+    #[test]
+    fn test_new_scene_with_multiple_objects() {
+        let obj1 = GameObject::new(vec![], Position { x: 5, y: 5, z: 0, is_relative: false });
+        let obj2 = GameObject::new(vec![], Position { x: 7, y: 8, z: 1, is_relative: false });
+
+        let scene = Scene::new(
+            vec![obj1, obj2],
+            vec![],
+            Position { x: 0, y: 0, z: 0, is_relative: false }
+        );
+        assert_eq!(scene.manager.game_objects.len(), 2);
+    }
+
+    #[test]
+    fn test_scene_manager_handles_main_object_components() {
+        let scene = Scene::new(
+            vec![],
+            vec![],
+            Position { x: 2, y: 2, z: 2, is_relative: false }
+        );
+        assert_eq!(scene.main_object.components.len(), 0);
+    }
+
+    #[test]
+    fn test_init_returns_empty_when_no_sprite_components() {
+        let obj = GameObject::new(vec![], Position { x: 1, y: 2, z: 3, is_relative: false });
+        let scene = Scene::new(
+            vec![obj],
+            vec![],
+            Position { x: 0, y: 0, z: 0, is_relative: false }
+        );
+        let result = scene.init();
+        assert_eq!(result.len(), 0);
+    }
+}
