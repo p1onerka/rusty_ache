@@ -40,15 +40,15 @@ impl Scene {
                                 obj,
                                 &img.0,
                                 (
-                                    component.get_sprite_offset_unchecked().unwrap().0 + &img.1.0,
-                                    component.get_sprite_offset_unchecked().unwrap().1 + &img.1.1,
+                                    component.get_sprite_offset_unchecked().unwrap().0 + img.1.0,
+                                    component.get_sprite_offset_unchecked().unwrap().1 + img.1.1,
                                 ),
                             ));
                         }
                     };
                     renderable_objects.push((
                         obj,
-                        &component.get_sprite_unchecked().as_ref().unwrap(),
+                        component.get_sprite_unchecked().as_ref().unwrap(),
                         component.get_sprite_offset_unchecked().unwrap(),
                     ));
                 }
@@ -64,15 +64,15 @@ impl Scene {
                             &self.main_object,
                             &img.0,
                             (
-                                component.get_sprite_offset_unchecked().unwrap().0 + &img.1.0,
-                                component.get_sprite_offset_unchecked().unwrap().1 + &img.1.1,
+                                component.get_sprite_offset_unchecked().unwrap().0 + img.1.0,
+                                component.get_sprite_offset_unchecked().unwrap().1 + img.1.1,
                             ),
                         ));
                     }
                 };
                 renderable_objects.push((
                     &self.main_object,
-                    &component.get_sprite_unchecked().as_ref().unwrap(),
+                    component.get_sprite_unchecked().as_ref().unwrap(),
                     component.get_sprite_offset_unchecked().unwrap(),
                 ));
             }

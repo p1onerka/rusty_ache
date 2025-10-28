@@ -39,6 +39,6 @@ impl Component for Sprite {
         &self.shadow
     }
     fn get_sprite_offset_unchecked(&self) -> Option<(i32, i32)> {
-        Some(self.offset.clone())
+        Some(self.offset)
     }
 }

@@ -72,7 +72,7 @@ impl Renderer {
     }
 
     fn blit_sprite(
-        frame: &mut Vec<(u8, u8, u8, u8)>,
+        frame: &mut [(u8, u8, u8, u8)],
         sprite: &DynamicImage,
         visible_area: &Rectangle,
         position: (i32, i32),
@@ -106,8 +106,8 @@ impl Renderer {
                 }
 
                 // map world -> screen coordinates
-                let sx_i = wx as i32 - camera_top.0 as i32;
-                let sy_i = camera_top.1 as i32 - wy as i32;
+                let sx_i = wx - camera_top.0;
+                let sy_i = camera_top.1 - wy;
 
                 if sx_i < 0 || sy_i < 0 {
                     continue;

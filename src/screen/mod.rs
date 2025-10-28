@@ -21,7 +21,7 @@ pub struct Screen<'a> {
 }
 
 /// Implementation of Screen for main GUI application
-impl<'a> Screen<'a> {
+impl Screen<'_> {
     pub fn new(window: Arc<Window>, resolution: Resolution) -> Result<Self, pixels::Error> {
         let surface_texture =
             SurfaceTexture::new(resolution.width, resolution.height, window.clone());
@@ -43,6 +43,8 @@ impl<'a> Screen<'a> {
     }
 }
 
+type PixelData = Vec<(u8, u8, u8, u8)>;
+
 /// GUI for game
 pub struct App {
     /// Main window object
@@ -50,7 +52,7 @@ pub struct App {
     /// Screen for representing the game inside the window
     screen: Option<Screen<'static>>,
     /// Pixel colors provided by Renderer
-    pixel_data: Arc<RwLock<Vec<(u8, u8, u8, u8)>>>,
+    pixel_data: Arc<RwLock<PixelData>>,
     /// currently pressed key for Engine
     pub(crate) key_pressed: Arc<RwLock<Option<KeyCode>>>,
 
@@ -63,7 +65,7 @@ pub struct App {
 /// Basic App implementation
 impl App {
     pub fn new(
-        pixel_data: Arc<RwLock<Vec<(u8, u8, u8, u8)>>>,
+        pixel_data: Arc<RwLock<PixelData>>,
         window: Arc<RwLock<Option<Arc<Window>>>>,
     ) -> Self {
         App {
@@ -209,7 +211,7 @@ pub fn example() {
             let r = ((new_color >> 16) & 0xFF) as u8;
             let g = ((new_color >> 8) & 0xFF) as u8;
             let b = (new_color & 0xFF) as u8;
-            let a = 0xFF as u8;
+            let a = 0xFF_u8;
             {
                 let mut pixels = shared_pixel_data_clone
                     .write()

@@ -36,17 +36,17 @@ impl GameObject {
         script: Option<Box<dyn Script + Send + Sync>>,
         position: Position,
     ) -> Self {
-        let go = GameObject {
+        
+        GameObject {
             components,
             script,
             position,
-        };
-        go
+        }
     }
 
     pub fn add_position(&mut self, vec: (i32, i32)) {
-        self.position.x = self.position.x + vec.0;
-        self.position.y = self.position.y + vec.1;
+        self.position.x += vec.0;
+        self.position.y += vec.1;
     }
 
     pub fn run_action(&self) {}

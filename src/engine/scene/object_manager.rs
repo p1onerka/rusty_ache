@@ -25,8 +25,8 @@ impl GameObjectFactory {
     ) -> (usize, GameObject) {
         if self.uids.is_empty() && self.max_objects == self.allocated_objects {
             panic!("Trying to create object above limit")
-        } else if self.uids.is_empty() == false {
-            let uid = self.uids.iter().next().unwrap().clone();
+        } else if !self.uids.is_empty() {
+            let uid = *self.uids.iter().next().unwrap();
             self.uids.remove(&uid);
             return (uid, GameObject::new(components, None, position));
         }

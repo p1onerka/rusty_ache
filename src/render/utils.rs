@@ -16,7 +16,7 @@ fn make_init_default_background() -> Vec<(u8, u8, u8, u8)> {
             ));
         }
     }
-    return pixels;
+    pixels
 }
 
 /// Get slice of background

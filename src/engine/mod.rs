@@ -118,7 +118,7 @@ impl Engine for GameEngine {
                             .expect("Producer couldn't lock pixel data");
 
                         for (idx, p) in pixels.iter_mut().take(screen_size).enumerate() {
-                            *p = colors[idx].clone();
+                            *p = colors[idx];
                         }
 
                         window_arc.request_redraw();
