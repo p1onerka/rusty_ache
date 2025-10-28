@@ -1,3 +1,5 @@
+use std::collections::HashSet;
+use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, RwLock};
 use std::thread;
 use std::time::{Duration, Instant};
@@ -43,6 +45,13 @@ impl<'a> Screen<'a> {
     }
 }
 
+pub struct Keys {
+    pub w: AtomicBool,
+    pub a: AtomicBool,
+    pub s: AtomicBool,
+    pub d: AtomicBool,
+}
+
 /// GUI for game
 pub struct App {
     /// Main window object
@@ -52,7 +61,8 @@ pub struct App {
     /// Pixel colors provided by Renderer
     pixel_data: Arc<RwLock<Vec<(u8, u8, u8, u8)>>>,
     /// currently pressed key for Engine
-    pub(crate) key_pressed: Arc<RwLock<Option<KeyCode>>>,
+    pub(crate) keys_pressed: Arc<Keys>,
+    //pub(crate) key_pressed: Arc<RwLock<Option<KeyCode>>>,
 
     /// Currrent FPS accumulator (probably delete later)
     frame_count: u32,
@@ -70,7 +80,13 @@ impl App {
             screen: None,
             pixel_data,
             window,
-            key_pressed: Arc::new(RwLock::new(None)),
+            keys_pressed: Arc::new(Keys {
+                w: AtomicBool::new(false),
+                a: AtomicBool::new(false),
+                s: AtomicBool::new(false),
+                d: AtomicBool::new(false),
+            }),
+            //key_pressed: Arc::new(RwLock::new(None)),
 
             frame_count: 0,
             last_fps_report_time: Instant::now(),
@@ -155,12 +171,30 @@ impl ApplicationHandler for App {
                     },
                 ..
             } => {
-                let mut key = self.key_pressed.write().unwrap();
+                println!("pressed {:?}", key_code);
+                let pressed = state.is_pressed();
+
+                match key_code {
+                    KeyCode::KeyW => self.keys_pressed.w.store(pressed, Ordering::Relaxed),
+                    KeyCode::KeyA => self.keys_pressed.a.store(pressed, Ordering::Relaxed),
+                    KeyCode::KeyS => self.keys_pressed.s.store(pressed, Ordering::Relaxed),
+                    KeyCode::KeyD => self.keys_pressed.d.store(pressed, Ordering::Relaxed),
+                    _ => {}
+                }
+                /*let mut keys = self.keys_pressed.write().unwrap();
+                if state.is_pressed() {
+                    keys.insert(key_code);
+                    dbg!("inserted");
+                } else {
+                    keys.remove(&key_code);
+                    dbg!("removed");
+                }*/
+                /*let mut key = self.key_pressed.write().unwrap();
                 if state.is_pressed() {
                     *key = Some(key_code);
                 } else {
                     *key = None;
-                }
+                }*/
             }
             _ => (),
         }
@@ -230,7 +264,7 @@ pub fn example() {
     let _ = event_loop.run_app(&mut app);
 }
 
-pub fn example_keys() {
+/*pub fn example_keys() {
     let initial_resolution = Resolution {
         width: WIDTH,
         height: HEIGHT,
@@ -250,7 +284,8 @@ pub fn example_keys() {
     let shared_window_clone = shared_window.clone();
 
     let mut app = App::new(shared_pixel_data, shared_window);
-    let key_pressed_clone = app.key_pressed.clone();
+    let keys_pressed_clone = app.keys_pressed.clone();
+    //let key_pressed_clone = app.key_pressed.clone();
     // Producer thread
     thread::spawn(move || {
         let window_arc: Arc<Window> = loop {
@@ -264,13 +299,28 @@ pub fn example_keys() {
 
         let screen_size = (WIDTH * HEIGHT) as usize;
         loop {
-            let color = match *key_pressed_clone.read().unwrap() {
+            let cur_keys_state = keys_pressed_clone.read().unwrap();
+            let color = if cur_keys_state.contains(&KeyCode::KeyW) {
+                RED
+            } else if cur_keys_state.contains(&KeyCode::KeyA) {
+                BLUE
+            }
+            else if cur_keys_state.contains(&KeyCode::KeyS) {
+                GREEN
+            }
+            else if cur_keys_state.contains(&KeyCode::KeyD) {
+                PURPLE
+            }
+            else {
+                DEFAULT_COLOR
+            };
+            /*let color = match *key_pressed_clone.read().unwrap() {
                 Some(KeyCode::KeyW) => RED,
                 Some(KeyCode::KeyA) => BLUE,
                 Some(KeyCode::KeyS) => GREEN,
                 Some(KeyCode::KeyD) => PURPLE,
                 _ => DEFAULT_COLOR,
-            };
+            };*/
             {
                 let mut pixels = shared_pixel_data_clone
                     .write()
@@ -288,4 +338,4 @@ pub fn example_keys() {
     event_loop.set_control_flow(ControlFlow::Wait);
 
     let _ = event_loop.run_app(&mut app);
-}
+}*/
