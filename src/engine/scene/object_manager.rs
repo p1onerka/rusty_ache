@@ -1,4 +1,4 @@
-use crate::engine::scene::Scene;
+use crate::engine::scene::game_object::GameObject;
 use crate::engine::scene::game_object::Position;
 use crate::engine::scene::game_object::components::Component;
 use crate::engine::scene::game_object::{GameObject, Object};
@@ -21,20 +21,20 @@ impl GameObjectFactory {
 
     pub fn create_object(
         &mut self,
-        components: Vec<Box<dyn Component>>,
+        components: Vec<Box<dyn Component + Send + Sync>>,
         position: Position,
     ) -> (usize, GameObject) {
         if self.uids.is_empty() && self.max_objects == self.allocated_objects {
             panic!("Trying to create object above limit")
-        } else if self.uids.is_empty() == false {
-            let uid = self.uids.iter().next().unwrap().clone();
+        } else if !self.uids.is_empty() {
+            let uid = *self.uids.iter().next().unwrap();
             self.uids.remove(&uid);
-            return (uid, GameObject::new(components, position));
+            return (uid, GameObject::new(components, None, position));
         }
         self.allocated_objects += 1;
         (
             self.allocated_objects,
-            GameObject::new(components, position),
+            GameObject::new(components, None, position),
         )
     }
 }
@@ -258,7 +258,11 @@ impl GameObjectManager {
         }
     }
 
-    pub fn add_game_object(&mut self, components: Vec<Box<dyn Component>>, position: Position) {
+    pub fn add_game_object(
+        &mut self,
+        components: Vec<Box<dyn Component + Send + Sync>>,
+        position: Position,
+    ) {
         let (uid, object) = self.factory.create_object(components, position);
         self.game_objects.insert(uid, object);
     }

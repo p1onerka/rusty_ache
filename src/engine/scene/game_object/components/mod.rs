@@ -2,11 +2,12 @@
 
 use image::DynamicImage;
 use std::any::Any;
-use std::fmt::Debug;
-use std::rc::Rc;
 
 pub mod sprite;
 mod velocity;
+
+pub mod script;
+
 pub enum ComponentError {
     Exist(Box<dyn Component>),
     CannotApply(String),
@@ -18,6 +19,7 @@ pub enum ComponentError {
 pub enum ComponentType {
     Sprite,
     Velocity,
+    Action,
 }
 
 pub trait Component: Any {
@@ -26,5 +28,11 @@ pub trait Component: Any {
 
     fn get_sprite_unchecked(&self) -> &Option<DynamicImage> {
         &None
+    }
+    fn get_shadow_unchecked(&self) -> &Option<(DynamicImage, (i32, i32))> {
+        &None
+    }
+    fn get_sprite_offset_unchecked(&self) -> Option<(i32, i32)> {
+        None
     }
 }

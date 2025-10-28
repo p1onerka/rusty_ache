@@ -1,4 +1,5 @@
-use crate::engine::scene::game_object::components::{Component, ComponentError, ComponentType};
+use crate::engine::scene::game_object::components::script::Script;
+use crate::engine::scene::game_object::components::{Component, ComponentError};
 pub(crate) use crate::engine::scene::game_object::position::Position;
 
 pub mod components;
@@ -24,7 +25,8 @@ pub trait Object {
 }
 
 pub struct GameObject {
-    pub components: Vec<Box<dyn Component>>,
+    pub components: Vec<Box<dyn Component + Send + Sync>>,
+    pub script: Option<Box<dyn Script + Send + Sync>>,
     pub position: Position,
 }
 
@@ -37,6 +39,7 @@ impl Object for GameObject {
         }
         GameObject {
             components,
+            script,
             position,
         }
     }
@@ -207,4 +210,11 @@ mod tests {
 
         assert_eq!(game_object.components.len(), 0);
     }
+
+    pub fn add_position(&mut self, vec: (i32, i32)) {
+        self.position.x += vec.0;
+        self.position.y += vec.1;
+    }
+
+    pub fn run_action(&self) {}
 }

@@ -17,7 +17,7 @@ impl SceneManager {
         &self.active_scene
     }
 
-    pub fn init_active_scene(&self) -> Vec<(&GameObject, &DynamicImage)> {
+    pub fn init_active_scene(&self) -> Vec<(&GameObject, &DynamicImage, (i32, i32))> {
         self.active_scene.init()
     }
 }
