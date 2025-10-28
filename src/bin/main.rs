@@ -7,6 +7,7 @@ use rusty_ache::engine::scene::game_object::GameObject;
 use rusty_ache::engine::scene::game_object::components::script::Script;
 use rusty_ache::engine::scene::game_object::components::sprite::Sprite;
 use rusty_ache::engine::scene::game_object::position::Position;
+use rusty_ache::engine::scene::game_object::{GameObject, Object};
 use rusty_ache::engine::{Engine, GameEngine};
 use rusty_ache::screen::{HEIGHT, WIDTH};
 

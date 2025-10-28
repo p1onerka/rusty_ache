@@ -12,9 +12,10 @@ pub enum ComponentError {
     Exist(Box<dyn Component>),
     CannotApply(String),
     UnknownError(String),
+    InvalidIndex(String),
 }
 
-#[derive(Eq, PartialEq, Clone)]
+#[derive(Debug, Eq, PartialEq, Clone)]
 pub enum ComponentType {
     Sprite,
     Velocity,
