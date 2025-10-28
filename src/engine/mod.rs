@@ -51,7 +51,10 @@ impl Engine for GameEngine {
 
 #[cfg(test)]
 mod tests {
-    use crate::{Resolution, engine::scene::game_object::{Position, components::Component}};
+    use crate::{
+        Resolution,
+        engine::scene::game_object::{Position, components::Component},
+    };
 
     use super::*;
 
@@ -60,7 +63,16 @@ mod tests {
     }
 
     fn create_empty_scene() -> Scene {
-        Scene::new(vec![], vec![], Position { x: 0, y: 0, z: 0, is_relative: false })
+        Scene::new(
+            vec![],
+            vec![],
+            Position {
+                x: 0,
+                y: 0,
+                z: 0,
+                is_relative: false,
+            },
+        )
     }
 
     #[test]
@@ -70,7 +82,16 @@ mod tests {
         let engine = GameEngine::new(config, scene);
         assert_eq!(engine.config.get_resolution().width, 1024);
         assert_eq!(engine.config.get_resolution().height, 768);
-        assert_eq!(engine.render.scene_manager.active_scene.main_object.position.x, 0);
+        assert_eq!(
+            engine
+                .render
+                .scene_manager
+                .active_scene
+                .main_object
+                .position
+                .x,
+            0
+        );
     }
 
     #[test]
@@ -92,11 +113,21 @@ mod tests {
         let scene2 = Scene::new(
             vec![],
             vec![],
-            Position { x: 100, y: 100, z: 100, is_relative: false },
+            Position {
+                x: 100,
+                y: 100,
+                z: 100,
+                is_relative: false,
+            },
         );
         let result = engine.set_active_scene(scene2);
         assert!(result.is_ok());
-        let pos = engine.render.scene_manager.active_scene.main_object.position;
+        let pos = engine
+            .render
+            .scene_manager
+            .active_scene
+            .main_object
+            .position;
         assert_eq!(pos.x, 100);
         assert_eq!(pos.y, 100);
         assert_eq!(pos.z, 100);
@@ -109,10 +140,24 @@ mod tests {
         let mut engine = GameEngine::new(config, scene1);
 
         for i in 0..10 {
-            let scene = Scene::new(vec![], vec![], Position { x: i , y: i , z: i, is_relative: false });
+            let scene = Scene::new(
+                vec![],
+                vec![],
+                Position {
+                    x: i,
+                    y: i,
+                    z: i,
+                    is_relative: false,
+                },
+            );
             assert!(engine.set_active_scene(scene).is_ok());
-            let pos = engine.render.scene_manager.active_scene.main_object.position;
-            assert_eq!(pos.x, i );
+            let pos = engine
+                .render
+                .scene_manager
+                .active_scene
+                .main_object
+                .position;
+            assert_eq!(pos.x, i);
         }
     }
 
@@ -123,12 +168,35 @@ mod tests {
         let scene = Scene::new(
             vec![],
             main_components,
-            Position { x: 5, y: 6, z: 7, is_relative: false },
+            Position {
+                x: 5,
+                y: 6,
+                z: 7,
+                is_relative: false,
+            },
         );
         let config = create_config_with_resolution(1280, 720);
         let engine = GameEngine::new(config, scene);
-        assert_eq!(engine.render.scene_manager.active_scene.main_object.position.x, 5);
-        assert_eq!(engine.render.scene_manager.active_scene.main_object.components.len(), 0);
+        assert_eq!(
+            engine
+                .render
+                .scene_manager
+                .active_scene
+                .main_object
+                .position
+                .x,
+            5
+        );
+        assert_eq!(
+            engine
+                .render
+                .scene_manager
+                .active_scene
+                .main_object
+                .components
+                .len(),
+            0
+        );
     }
 
     #[test]
@@ -140,7 +208,12 @@ mod tests {
         let scene2 = Scene::new(
             vec![],
             vec![],
-            Position { x: 15, y: 15, z: 15, is_relative: false },
+            Position {
+                x: 15,
+                y: 15,
+                z: 15,
+                is_relative: false,
+            },
         );
         engine.set_active_scene(scene2).unwrap();
 
