@@ -36,7 +36,6 @@ impl GameObject {
         script: Option<Box<dyn Script + Send + Sync>>,
         position: Position,
     ) -> Self {
-        
         GameObject {
             components,
             script,
