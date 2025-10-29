@@ -15,6 +15,9 @@ Run project:
   cargo run --bin main
 ```
 
+### Docs
+Project documentation is availible [here](https://p1onerka.github.io/rusty_ache/rusty_ache/index.html).
+
 ## Devs
 * [Aleksei Dmitrievstev](https://github.com/admitrievtsev)
 * [Ksenia Kotelnikova](https://github.com/p1onerka)
