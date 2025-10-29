@@ -6,6 +6,9 @@ on:
   pull_request:
     branches: [ main, readme ]
 
+permissions:
+    contents: write
+
 jobs:
   Build-And-Deploy:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main' || github.event_name == 'push' && github.ref == 'refs/heads/readme' # FOR TESTTING PURPOSES, DELETE BEFORE DEPLOY
