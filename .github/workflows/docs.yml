@@ -2,13 +2,13 @@ name: Deploy Documentation
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, readme ]
   pull_request:
-    branches: [ main ]
+    branches: [ main, readme ]
 
 jobs:
   Build-And-Deploy:
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main' || github.event_name == 'pull_request' && github.ref == 'refs/heads/readme' # FOR TESTTING PURPOSES, DELETE BEFORE DEPLOY
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' || github.event_name == 'push' && github.ref == 'refs/heads/readme' # FOR TESTTING PURPOSES, DELETE BEFORE DEPLOY
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
