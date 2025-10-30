@@ -15,7 +15,7 @@ pub enum GameObjectError {
 /// A trait describing the basic game object entity
 pub trait Object {
     fn new(components: Vec<Box<dyn Component + Send + Sync>>, script: Option<Box<dyn Script + Send + Sync>>, position: Position) -> Self;
-    fn add_component(&mut self, component: Box<dyn Component>) -> Result<(), GameObjectError>;
+    fn add_component(&mut self, component: Box<dyn Component + Send + Sync>) -> Result<(), GameObjectError>;
 
     fn remove_component(&mut self, component_id: usize) -> Result<(), GameObjectError>;
 
@@ -23,7 +23,9 @@ pub trait Object {
 
     fn update_position(&mut self, position: Position) -> Result<(), GameObjectError>;
 
-    fn add_position(&mut self, vec: (i32, i32)) -> Result<(), GameObjectError>;
+    fn add_position(&mut self, vec: (i32, i32)) -> ();
+
+    fn run_action(&self) -> ();
 }
 
 pub struct GameObject {
@@ -34,7 +36,7 @@ pub struct GameObject {
 
 
 impl Object for GameObject {
-    pub fn new(components: Vec<Box<dyn Component + Send + Sync>>,
+    fn new(components: Vec<Box<dyn Component + Send + Sync>>,
         script: Option<Box<dyn Script + Send + Sync>>, position: Position) -> Self {
         for component in &components {
             if component.get_component_type() == ComponentType::Sprite {
@@ -75,12 +77,12 @@ impl Object for GameObject {
         self.position = position;
         Ok(())
     }
-    pub fn add_position(&mut self, vec: (i32, i32)) {
+    fn add_position(&mut self, vec: (i32, i32)) {
         self.position.x += vec.0;
         self.position.y += vec.1;
     }
 
-    pub fn run_action(&self) {}
+    fn run_action(&self) {}
 }
 
 #[cfg(test)]
