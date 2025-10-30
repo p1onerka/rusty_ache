@@ -22,6 +22,8 @@ pub trait Object {
     fn get_position(&self) -> Result<&Position, GameObjectError>;
 
     fn update_position(&mut self, position: Position) -> Result<(), GameObjectError>;
+
+    fn add_position(&mut self, vec: (i32, i32)) -> Result<(), GameObjectError>;
 }
 
 pub struct GameObject {
