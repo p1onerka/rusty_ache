@@ -1,3 +1,4 @@
+use crate::engine::scene::game_object::components::script::Script;
 use crate::engine::scene::game_object::components::{Component, ComponentError, ComponentType};
 pub(crate) use crate::engine::scene::game_object::position::Position;
 
@@ -13,23 +14,39 @@ pub enum GameObjectError {
 
 /// A trait describing the basic game object entity
 pub trait Object {
-    fn new(components: Vec<Box<dyn Component>>, position: Position) -> Self;
-    fn add_component(&mut self, component: Box<dyn Component>) -> Result<(), GameObjectError>;
+    fn new(
+        components: Vec<Box<dyn Component + Send + Sync>>,
+        script: Option<Box<dyn Script + Send + Sync>>,
+        position: Position,
+    ) -> Self;
+    fn add_component(
+        &mut self,
+        component: Box<dyn Component + Send + Sync>,
+    ) -> Result<(), GameObjectError>;
 
     fn remove_component(&mut self, component_id: usize) -> Result<(), GameObjectError>;
 
     fn get_position(&self) -> Result<&Position, GameObjectError>;
 
     fn update_position(&mut self, position: Position) -> Result<(), GameObjectError>;
+
+    fn add_position(&mut self, vec: (i32, i32)) -> ();
+
+    fn run_action(&self) -> ();
 }
 
 pub struct GameObject {
-    pub components: Vec<Box<dyn Component>>,
+    pub components: Vec<Box<dyn Component + Send + Sync>>,
+    pub script: Option<Box<dyn Script + Send + Sync>>,
     pub position: Position,
 }
 
 impl Object for GameObject {
-    fn new(components: Vec<Box<dyn Component>>, position: Position) -> Self {
+    fn new(
+        components: Vec<Box<dyn Component + Send + Sync>>,
+        script: Option<Box<dyn Script + Send + Sync>>,
+        position: Position,
+    ) -> Self {
         for component in &components {
             if component.get_component_type() == ComponentType::Sprite {
                 component.get_sprite_unchecked();
@@ -37,10 +54,14 @@ impl Object for GameObject {
         }
         GameObject {
             components,
+            script,
             position,
         }
     }
-    fn add_component(&mut self, component: Box<dyn Component>) -> Result<(), GameObjectError> {
+    fn add_component(
+        &mut self,
+        component: Box<dyn Component + Send + Sync>,
+    ) -> Result<(), GameObjectError> {
         if component.get_component_type() == ComponentType::Sprite {
             component.get_sprite_unchecked();
         }
@@ -68,6 +89,12 @@ impl Object for GameObject {
         self.position = position;
         Ok(())
     }
+    fn add_position(&mut self, vec: (i32, i32)) {
+        self.position.x += vec.0;
+        self.position.y += vec.1;
+    }
+
+    fn run_action(&self) {}
 }
 
 #[cfg(test)]
@@ -83,8 +110,9 @@ mod tests {
             z: 0,
             is_relative: false,
         };
-        let components: Vec<Box<dyn Component>> = vec![Box::new(Sprite::new(None))];
-        GameObject::new(components, position)
+        let components: Vec<Box<dyn Component + Send + Sync>> =
+            vec![Box::new(Sprite::new(None, None, (0, 0)))];
+        GameObject::new(components, None, position)
     }
 
     #[test]
@@ -95,9 +123,10 @@ mod tests {
             z: 30,
             is_relative: true,
         };
-        let components: Vec<Box<dyn Component>> = vec![Box::new(Sprite::new(None))];
+        let components: Vec<Box<dyn Component + Send + Sync>> =
+            vec![Box::new(Sprite::new(None, None, (0, 0)))];
 
-        let game_object = GameObject::new(components, position);
+        let game_object = GameObject::new(components, None, position);
 
         assert_eq!(game_object.components.len(), 1);
         assert_eq!(game_object.position.x, 10);
@@ -110,7 +139,7 @@ mod tests {
         let mut game_object = create_test_game_object();
         let initial_count = game_object.components.len();
 
-        let new_component = Box::new(Sprite::new(None));
+        let new_component = Box::new(Sprite::new(None, None, (0, 0)));
         let result = game_object.add_component(new_component);
 
         assert!(result.is_ok());
@@ -152,7 +181,7 @@ mod tests {
             z: 35,
             is_relative: false,
         };
-        let game_object = GameObject::new(vec![], position);
+        let game_object = GameObject::new(vec![], None, position);
 
         let result = game_object.get_position();
 
@@ -190,7 +219,7 @@ mod tests {
             z: 0,
             is_relative: true,
         };
-        let game_object = GameObject::new(vec![], position);
+        let game_object = GameObject::new(vec![], None, position);
 
         assert_eq!(game_object.components.len(), 0);
     }

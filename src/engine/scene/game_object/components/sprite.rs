@@ -5,11 +5,21 @@ use image::DynamicImage;
 
 pub struct Sprite {
     pub image: Option<DynamicImage>,
+    pub shadow: Option<(DynamicImage, (i32, i32))>,
+    pub offset: (i32, i32),
 }
 
 impl Sprite {
-    pub fn new(image: Option<DynamicImage>) -> Self {
-        Sprite { image }
+    pub fn new(
+        image: Option<DynamicImage>,
+        shadow: Option<(DynamicImage, (i32, i32))>,
+        offset: (i32, i32),
+    ) -> Self {
+        Sprite {
+            image,
+            shadow,
+            offset,
+        }
     }
 }
 
@@ -23,6 +33,13 @@ impl Component for Sprite {
 
     fn get_sprite_unchecked(&self) -> &Option<DynamicImage> {
         &self.image
+    }
+
+    fn get_shadow_unchecked(&self) -> &Option<(DynamicImage, (i32, i32))> {
+        &self.shadow
+    }
+    fn get_sprite_offset_unchecked(&self) -> Option<(i32, i32)> {
+        Some(self.offset)
     }
 }
 #[cfg(test)]
@@ -40,14 +57,14 @@ mod tests {
 
         #[test]
         fn test_sprite_without_image() {
-            let sprite = Sprite::new(None);
+            let sprite = Sprite::new(None, None, (0, 0));
             assert!(sprite.image.is_none());
         }
 
         #[test]
         fn test_new_sprite_with_image() {
             let image = create_test_image(100, 100);
-            let sprite = Sprite::new(Some(image));
+            let sprite = Sprite::new(Some(image), None, (0, 0));
 
             assert!(sprite.image.is_some());
         }
@@ -55,7 +72,7 @@ mod tests {
         #[test]
         fn test_sprite_correct_dimensions() {
             let image = create_test_image(200, 150);
-            let sprite = Sprite::new(Some(image));
+            let sprite = Sprite::new(Some(image), None, (0, 0));
 
             assert!(sprite.image.is_some());
             if let Some(ref img) = sprite.image {
@@ -72,13 +89,13 @@ mod tests {
 
         #[test]
         fn test_get_component_type_returns_sprite() {
-            let sprite = Sprite::new(None);
+            let sprite = Sprite::new(None, None, (0, 0));
             assert_eq!(sprite.get_component_type(), ComponentType::Sprite);
         }
 
         #[test]
         fn test_as_any_returns_correct_type() {
-            let sprite = Sprite::new(None);
+            let sprite = Sprite::new(None, None, (0, 0));
             let any = sprite.as_any();
 
             assert!(any.is::<Sprite>());
@@ -87,7 +104,7 @@ mod tests {
 
         #[test]
         fn test_as_any_downcasting() {
-            let sprite = Sprite::new(None);
+            let sprite = Sprite::new(None, None, (0, 0));
             let any = sprite.as_any();
 
             let downcasted = any.downcast_ref::<Sprite>();
@@ -101,7 +118,7 @@ mod tests {
         #[test]
         fn test_get_sprite_unchecked_returns_image() {
             let image = create_test_image(50, 50);
-            let sprite = Sprite::new(Some(image));
+            let sprite = Sprite::new(Some(image), None, (0, 0));
 
             let result = sprite.get_sprite_unchecked();
             assert!(result.is_some());
@@ -109,7 +126,7 @@ mod tests {
 
         #[test]
         fn test_get_sprite_unchecked_without_image() {
-            let sprite = Sprite::new(None);
+            let sprite = Sprite::new(None, None, (0, 0));
             let result = sprite.get_sprite_unchecked();
             assert!(result.is_none());
         }
