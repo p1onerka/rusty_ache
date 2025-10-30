@@ -2,6 +2,8 @@
 
 use image::DynamicImage;
 use std::any::Any;
+use std::fmt::Debug;
+use std::rc::Rc;
 
 pub mod sprite;
 mod velocity;
@@ -12,9 +14,10 @@ pub enum ComponentError {
     Exist(Box<dyn Component>),
     CannotApply(String),
     UnknownError(String),
+    InvalidIndex(String),
 }
 
-#[derive(Eq, PartialEq, Clone)]
+#[derive(Debug, Eq, PartialEq, Clone)]
 pub enum ComponentType {
     Sprite,
     Velocity,
