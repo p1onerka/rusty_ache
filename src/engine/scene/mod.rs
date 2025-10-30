@@ -1,7 +1,7 @@
+use crate::engine::scene::game_object::Object;
 use crate::engine::scene::game_object::components::{Component, ComponentType};
 use crate::engine::scene::game_object::{GameObject, Position};
 use crate::engine::scene::object_manager::GameObjectManager;
-use crate::engine::scene::game_object::Object;
 use image::DynamicImage;
 
 pub mod game_object;
