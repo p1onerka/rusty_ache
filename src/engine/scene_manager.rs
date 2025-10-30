@@ -40,8 +40,8 @@ mod tests {
         }
     }
 
-    fn create_test_components() -> Vec<Box<dyn Component>> {
-        vec![Box::new(Sprite::new(None))]
+    fn create_test_components() -> Vec<Box<dyn Component + Send + Sync>> {
+        vec![Box::new(Sprite::new(None, None, (0, 0)))]
     }
 
     fn create_simple_scene() -> Scene {
@@ -58,6 +58,7 @@ mod tests {
         for i in 0..sprite_count {
             let obj = GameObject::new(
                 create_test_components(),
+                None,
                 create_test_position(i as i32, i as i32, i as i32, false),
             );
             objects.push(obj);
@@ -154,10 +155,12 @@ mod tests {
     fn test_active_scene_preserves_scene_structure() {
         let obj1 = GameObject::new(
             create_test_components(),
+            None,
             create_test_position(1, 2, 3, false),
         );
         let obj2 = GameObject::new(
             create_test_components(),
+            None,
             create_test_position(4, 5, 6, false),
         );
 

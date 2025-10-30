@@ -123,7 +123,8 @@ mod tests {
             z: 30,
             is_relative: true,
         };
-        let components: Vec<Box<dyn Component>> = vec![Box::new(Sprite::new(None, None, (0, 0)))];
+        let components: Vec<Box<dyn Component + Send + Sync>> =
+            vec![Box::new(Sprite::new(None, None, (0, 0)))];
 
         let game_object = GameObject::new(components, None, position);
 

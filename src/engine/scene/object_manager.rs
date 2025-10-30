@@ -52,8 +52,8 @@ mod factory_tests {
         }
     }
 
-    fn create_test_components() -> Vec<Box<dyn Component>> {
-        vec![Box::new(Sprite::new(None))]
+    fn create_test_components() -> Vec<Box<dyn Component + Send + Sync>> {
+        vec![Box::new(Sprite::new(None, None, (0, 0)))]
     }
 
     #[test]
@@ -101,9 +101,9 @@ mod factory_tests {
     #[test]
     fn test_create_object_returns_game_object_with_components() {
         let mut factory = GameObjectFactory::new(10);
-        let components = vec![
-            Box::new(Sprite::new(None)) as Box<dyn Component>,
-            Box::new(Sprite::new(None)) as Box<dyn Component>,
+        let components: Vec<Box<dyn Component + Send + Sync>> = vec![
+            Box::new(Sprite::new(None, None, (0, 0))) as Box<dyn Component + Send + Sync>,
+            Box::new(Sprite::new(None, None, (0, 0))) as Box<dyn Component + Send + Sync>,
         ];
 
         let (_uid, obj) = factory.create_object(components, create_test_position(0, 0, 0, false));
@@ -282,8 +282,8 @@ mod manager_tests {
         }
     }
 
-    fn create_test_components() -> Vec<Box<dyn Component>> {
-        vec![Box::new(Sprite::new(None))]
+    fn create_test_components() -> Vec<Box<dyn Component + Send + Sync>> {
+        vec![Box::new(Sprite::new(None, None, (0, 0)))]
     }
 
     #[test]
