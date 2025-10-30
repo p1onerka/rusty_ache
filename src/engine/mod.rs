@@ -10,6 +10,7 @@ use crate::engine::scene_manager::SceneManager;
 use crate::render::renderer::DEFAULT_BACKGROUND_COLOR;
 use crate::render::renderer::Renderer;
 use crate::screen::{App, HEIGHT, WIDTH};
+use crate::engine::scene::game_object::Object;
 use std::io::Error;
 use std::sync::{Arc, RwLock};
 use std::thread;
@@ -47,7 +48,7 @@ impl Engine for GameEngine {
         Ok(())
     }
 
-    fn new(config: Box<(dyn Config + 'static + Send)>, scene: Scene) -> Self
+    fn new(config: Box<dyn Config + 'static + Send>, scene: Scene) -> Self
     where
         Self: Sized,
     {

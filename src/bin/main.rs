@@ -3,7 +3,6 @@ use image::ImageReader;
 use rusty_ache::Resolution;
 use rusty_ache::engine::config::{Config, EngineConfig};
 use rusty_ache::engine::scene::Scene;
-use rusty_ache::engine::scene::game_object::GameObject;
 use rusty_ache::engine::scene::game_object::components::script::Script;
 use rusty_ache::engine::scene::game_object::components::sprite::Sprite;
 use rusty_ache::engine::scene::game_object::position::Position;
