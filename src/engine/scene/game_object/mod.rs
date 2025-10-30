@@ -14,7 +14,7 @@ pub enum GameObjectError {
 
 /// A trait describing the basic game object entity
 pub trait Object {
-    fn new(components: Vec<Box<dyn Component>>, position: Position) -> Self;
+    fn new(components: Vec<Box<dyn Component + Send + Sync>>, script: Option<Box<dyn Script + Send + Sync>>, position: Position) -> Self;
     fn add_component(&mut self, component: Box<dyn Component>) -> Result<(), GameObjectError>;
 
     fn remove_component(&mut self, component_id: usize) -> Result<(), GameObjectError>;
@@ -47,7 +47,7 @@ impl Object for GameObject {
             position,
         }
     }
-    fn add_component(&mut self, component: Box<dyn Component>) -> Result<(), GameObjectError> {
+    fn add_component(&mut self, component: Box<dyn Component + Send + Sync>) -> Result<(), GameObjectError> {
         if component.get_component_type() == ComponentType::Sprite {
             component.get_sprite_unchecked();
         }
@@ -75,6 +75,12 @@ impl Object for GameObject {
         self.position = position;
         Ok(())
     }
+    pub fn add_position(&mut self, vec: (i32, i32)) {
+        self.position.x += vec.0;
+        self.position.y += vec.1;
+    }
+
+    pub fn run_action(&self) {}
 }
 
 #[cfg(test)]
@@ -214,11 +220,4 @@ mod tests {
 
         assert_eq!(game_object.components.len(), 0);
     }
-
-    pub fn add_position(&mut self, vec: (i32, i32)) {
-        self.position.x += vec.0;
-        self.position.y += vec.1;
-    }
-
-    pub fn run_action(&self) {}
 }
