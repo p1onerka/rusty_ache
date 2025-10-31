@@ -1,114 +1,18 @@
-use image::ImageReader;
-
-use rusty_ache::Resolution;
-use rusty_ache::engine::config::{Config, EngineConfig};
-use rusty_ache::engine::scene::Scene;
 use rusty_ache::engine::scene::game_object::components::script::Script;
-use rusty_ache::engine::scene::game_object::components::sprite::Sprite;
 use rusty_ache::engine::scene::game_object::position::Position;
-use rusty_ache::engine::scene::game_object::{GameObject, Object};
-use rusty_ache::engine::{Engine, GameEngine};
+use rusty_ache::engine::scene::game_object::GameObject;
+use rusty_ache::engine::Engine;
 use rusty_ache::screen::{HEIGHT, WIDTH};
+use rusty_ache::interface::{create_obj_with_img, init_engine, init_scene};
 
 fn main() {
-    let mut engine = GameEngine::new(
-        Box::new(EngineConfig::new(Resolution::new(WIDTH, HEIGHT))),
-        Scene::new(
-            vec![
-                GameObject::new(
-                    vec![Box::new(Sprite::new(
-                        Some(
-                            ImageReader::open("src/bin/resources/junk_house.png")
-                                .unwrap()
-                                .decode()
-                                .unwrap(),
-                        ),
-                        None,
-                        (0, 0),
-                    ))],
-                    None,
-                    Position {
-                        x: 0,
-                        y: 0,
-                        z: 1,
-                        is_relative: false,
-                    },
-                ),
-                GameObject::new(
-                    vec![Box::new(Sprite::new(
-                        Some(
-                            ImageReader::open("src/bin/resources/tall_house.png")
-                                .unwrap()
-                                .decode()
-                                .unwrap(),
-                        ),
-                        Some((
-                            ImageReader::open("src/bin/resources/cc_shadow.png")
-                                .unwrap()
-                                .decode()
-                                .unwrap(),
-                            (-7, 4),
-                        )),
-                        (0, 0),
-                    ))],
-                    None,
-                    Position {
-                        x: 130,
-                        y: -100,
-                        z: 2,
-                        is_relative: false,
-                    },
-                ),
-                GameObject::new(
-                    vec![Box::new(Sprite::new(
-                        Some(
-                            ImageReader::open("src/bin/resources/tall_house.png")
-                                .unwrap()
-                                .decode()
-                                .unwrap(),
-                        ),
-                        Some((
-                            ImageReader::open("src/bin/resources/cc_shadow.png")
-                                .unwrap()
-                                .decode()
-                                .unwrap(),
-                            (-7, 4),
-                        )),
-                        (0, 0),
-                    ))],
-                    None,
-                    Position {
-                        x: 15,
-                        y: -25,
-                        z: 3,
-                        is_relative: false,
-                    },
-                ),
-            ],
-            vec![Box::new(Sprite::new(
-                Some(
-                    ImageReader::open("src/bin/resources/white_ship.png")
-                        .unwrap()
-                        .decode()
-                        .unwrap(),
-                ),
-                Some((
-                    ImageReader::open("src/bin/resources/bc_shadow.png")
-                        .unwrap()
-                        .decode()
-                        .unwrap(),
-                    (0, -10),
-                )),
-                (60, -60),
-            ))],
-            Position {
-                x: -10,
-                y: 10,
-                z: 0,
-                is_relative: false,
-            },
-        ),
-    );
+    let tower_obj = create_obj_with_img("src/bin/resources/tower.png", 90, 40, true);
+    let junk_house_obj = create_obj_with_img("src/bin/resources/junk_house.png", 130, -100, true);
+    let pool_house_obj = create_obj_with_img("src/bin/resources/pool_house.png", 15, -25, true);
+    let main_ship_obj = create_obj_with_img("src/bin/resources/white_ship.png", 0, 0, true);
+
+    let scene = init_scene(&[tower_obj, junk_house_obj, pool_house_obj], main_ship_obj);
+    let mut engine = init_engine(scene, WIDTH, HEIGHT);
     engine.render().unwrap();
     engine.run().unwrap()
 }

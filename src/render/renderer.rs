@@ -206,7 +206,7 @@ impl Renderer {
                 (pos.x, pos.y),
                 (main_object.position.x, main_object.position.y),
                 (self.resolution.width as i32, self.resolution.height as i32),
-                has_shadow
+                has_shadow,
             );
             self.prev_frame = frame.clone();
         }

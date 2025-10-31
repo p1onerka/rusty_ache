@@ -51,7 +51,7 @@ impl Scene {
                         obj,
                         component.get_sprite_unchecked().as_ref().unwrap(),
                         component.get_sprite_offset_unchecked().unwrap(),
-                        component.get_shadow_unchecked()
+                        component.get_shadow_unchecked(),
                     ));
                 }
             }
@@ -76,7 +76,7 @@ impl Scene {
                         &self.main_object,
                         sprite_img,
                         component.get_sprite_offset_unchecked().unwrap_or((0, 0)),
-                        component.get_shadow_unchecked()
+                        component.get_shadow_unchecked(),
                     ));
                 }
             }
