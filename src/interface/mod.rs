@@ -4,6 +4,7 @@ use crate::{engine::{config::{Config, EngineConfig}, scene::{
     game_object::{components::sprite::Sprite, GameObject, Object, Position}, Scene
 }, Engine, GameEngine}, Resolution};
 
+#[derive(Clone)]
 pub struct ObjectWithImage<'a> {
     image_path: &'a str,
     x: i32,
