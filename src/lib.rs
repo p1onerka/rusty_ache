@@ -1,4 +1,5 @@
 pub mod engine;
+pub mod interface;
 pub mod render;
 pub mod screen;
 
