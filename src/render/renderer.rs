@@ -10,7 +10,9 @@ use crate::screen::{HEIGHT, WIDTH};
 
 use super::utils::make_init_frame;
 
-pub const DEFAULT_BACKGROUND_COLOR: (u8, u8, u8, u8) = (245, 245, 220, 255);
+pub const DEFAULT_BACKGROUND_COLOR: (u8, u8, u8, u8) = (103, 104, 122, 255);
+pub const OFFSET: (i32, i32) = (10, -10);
+pub const SHADOW_OPAQUENESS: u8 = 70;
 
 pub struct Renderable {
     pub uid: u32,
@@ -34,6 +36,10 @@ pub struct Renderer {
     prev_frame: Vec<(u8, u8, u8, u8)>,
     //renderable: Vec<Renderable>,
     pub scene_manager: SceneManager,
+
+    background_cache: Vec<(u8, u8, u8, u8)>,
+    background_offset: (i32, i32),
+    last_cam_pos: (i32, i32),
 }
 
 impl Renderer {
@@ -44,13 +50,18 @@ impl Renderer {
         scene_manager: SceneManager,
     ) -> Self {
         let background_clone = background.clone();
+        let init_frame = make_init_frame(background_clone);
         Renderer {
             //frame_ready: false,
             resolution,
             background,
-            prev_frame: make_init_frame(background_clone),
+            prev_frame: init_frame.clone(),
             //renderable: Vec::new(),
             scene_manager,
+
+            background_cache: init_frame,
+            background_offset: (0, 0),
+            last_cam_pos: (0,0)
         }
     }
 
@@ -105,6 +116,28 @@ impl Renderer {
                     continue;
                 }
 
+                // shadow
+                let sx_i_shadow = wx + OFFSET.0 - camera_top.0;
+                let sy_i_shadow = camera_top.1 - wy + OFFSET.1;
+                if sx_i_shadow < 0 || sy_i_shadow < 0 {
+                    continue;
+                }
+                let sx_shadow = sx_i_shadow as u32;
+                let sy_shadow = sy_i_shadow as u32;
+                if sx_shadow >= frame_w as u32 || sy_shadow >= frame_h as u32 {
+                    continue;
+                }
+                let idx = (sy_shadow * frame_w as u32 + sx_shadow) as usize;
+                let existing = frame[idx];
+                let alpha = SHADOW_OPAQUENESS as f32 / 255.0;
+                let blended = (
+                    (existing.0 as f32 * (1.0 - alpha)) as u8,
+                    (existing.1 as f32 * (1.0 - alpha)) as u8,
+                    (existing.2 as f32 * (1.0 - alpha)) as u8,
+                    255,
+                );
+                frame[idx] = blended;
+
                 // map world -> screen coordinates
                 let sx_i = wx - camera_top.0;
                 let sy_i = camera_top.1 - wy;
@@ -119,7 +152,7 @@ impl Renderer {
                     continue;
                 }
 
-                // fully opaque → just overwrite
+                // fully opaque => just overwrite
                 let idx = (sy * frame_w as u32 + sx) as usize;
                 let mut shadowed = src;
                 if src[0] == 0 && src[1] == 0 && src[2] == 0 && src[3] != 255 {
