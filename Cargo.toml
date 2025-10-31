@@ -2,6 +2,8 @@
 name = "rusty_ache"
 version = "0.1.0"
 edition = "2024"
+documentation = "https://p1onerka.github.io/rusty_ache"
+repository = "https://github.com/p1onerka/rusty_ache"
 
 [[bin]]
 name = "main"
@@ -12,3 +14,6 @@ path = "src/bin/main.rs"
 image = "0.25.8"
 pixels = "0.15.0"
 winit = "0.30.12"
+
+[package.metadata.docs.rs]
+all-features = true
