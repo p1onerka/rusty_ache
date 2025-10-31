@@ -11,6 +11,7 @@ use crate::engine::scene_manager::SceneManager;
 use crate::render::renderer::DEFAULT_BACKGROUND_COLOR;
 use crate::render::renderer::Renderer;
 use crate::screen::{App, HEIGHT, WIDTH};
+//use image::ImageReader;
 use std::io::Error;
 use std::sync::atomic::Ordering;
 use std::sync::{Arc, RwLock};
@@ -57,6 +58,10 @@ impl Engine for GameEngine {
             //config,
             render: Arc::new(RwLock::from(Renderer::new(
                 res,
+                /*Some(ImageReader::open("src/bin/resources/tile2.png")
+                .unwrap()
+                .decode()
+                .unwrap())*/
                 None,
                 SceneManager::new(scene),
             ))),
