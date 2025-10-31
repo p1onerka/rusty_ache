@@ -111,7 +111,7 @@ mod tests {
             is_relative: false,
         };
         let components: Vec<Box<dyn Component + Send + Sync>> =
-            vec![Box::new(Sprite::new(None, None, (0, 0)))];
+            vec![Box::new(Sprite::new(None, false, (0, 0)))];
         GameObject::new(components, None, position)
     }
 
@@ -124,7 +124,7 @@ mod tests {
             is_relative: true,
         };
         let components: Vec<Box<dyn Component + Send + Sync>> =
-            vec![Box::new(Sprite::new(None, None, (0, 0)))];
+            vec![Box::new(Sprite::new(None, false, (0, 0)))];
 
         let game_object = GameObject::new(components, None, position);
 
@@ -139,7 +139,7 @@ mod tests {
         let mut game_object = create_test_game_object();
         let initial_count = game_object.components.len();
 
-        let new_component = Box::new(Sprite::new(None, None, (0, 0)));
+        let new_component = Box::new(Sprite::new(None, false, (0, 0)));
         let result = game_object.add_component(new_component);
 
         assert!(result.is_ok());

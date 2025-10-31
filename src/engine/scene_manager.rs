@@ -41,7 +41,7 @@ mod tests {
     }
 
     fn create_test_components() -> Vec<Box<dyn Component + Send + Sync>> {
-        vec![Box::new(Sprite::new(None, None, (0, 0)))]
+        vec![Box::new(Sprite::new(None, false, (0, 0)))]
     }
 
     fn create_simple_scene() -> Scene {
