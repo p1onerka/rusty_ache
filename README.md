@@ -4,11 +4,11 @@ Blazingly fast game engine written in Rust.
 ## How to run
 Clone this repo:
 ```bash
-  git clone git@github.com:WoWaster/Geraltt.git
+  git clone git@github.com:p1onerka/rusty_ache.git
 ```
 Open project:
 ```bash
-  cd spbu-tt-diff-notify
+  cd rusty_ache
 ```
 Run project:
 ```bash
