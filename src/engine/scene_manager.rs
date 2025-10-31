@@ -52,7 +52,7 @@ mod tests {
         )
     }
 
-    fn create_scene_with_sprites(sprite_count: usize) -> Scene {
+    fn _create_scene_with_sprites(sprite_count: usize) -> Scene {
         let mut objects = vec![];
 
         for i in 0..sprite_count {

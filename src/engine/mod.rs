@@ -12,11 +12,11 @@ use crate::render::renderer::DEFAULT_BACKGROUND_COLOR;
 use crate::render::renderer::Renderer;
 use crate::screen::{App, HEIGHT, WIDTH};
 use std::io::Error;
+use std::sync::atomic::Ordering;
 use std::sync::{Arc, RwLock};
 use std::thread;
 use std::time::Duration;
 use winit::event_loop::{ControlFlow, EventLoop};
-use winit::keyboard::KeyCode;
 use winit::window::Window;
 
 /// A trait for describing entity for main engine logic
@@ -80,7 +80,8 @@ impl Engine for GameEngine {
         let shared_window_clone = shared_window.clone();
 
         let mut app = App::new(shared_pixel_data, shared_window);
-        let key_pressed_clone = app.key_pressed.clone();
+        //let key_pressed_clone = app.key_pressed.clone();
+        let keys_pressed_clone = app.keys_pressed.clone();
         let renderer = self.render.clone();
         // Producer thread
         thread::spawn(move || {
@@ -95,13 +96,19 @@ impl Engine for GameEngine {
 
             let screen_size = (WIDTH * HEIGHT) as usize;
             loop {
-                let vector_move = match *key_pressed_clone.read().unwrap() {
+                /*let vector_move = match *key_pressed_clone.read().unwrap() {
                     Some(KeyCode::KeyW) => (0, 1),
                     Some(KeyCode::KeyA) => (-1, 0),
                     Some(KeyCode::KeyS) => (0, -1),
                     Some(KeyCode::KeyD) => (1, 0),
                     _ => (0, 0),
-                };
+                };*/
+                let dx = (keys_pressed_clone.d.load(Ordering::Relaxed) as i32)
+                    - (keys_pressed_clone.a.load(Ordering::Relaxed) as i32);
+                let dy = (keys_pressed_clone.w.load(Ordering::Relaxed) as i32)
+                    - (keys_pressed_clone.s.load(Ordering::Relaxed) as i32);
+
+                let vector_move = (dx, dy);
                 //println!("{:?}", vector_move);
                 renderer
                     .write()
