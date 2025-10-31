@@ -18,7 +18,7 @@ fn main() {
                 GameObject::new(
                     vec![Box::new(Sprite::new(
                         Some(
-                            ImageReader::open("src/bin/resources/command_center.png")
+                            ImageReader::open("src/bin/resources/junk_house.png")
                                 .unwrap()
                                 .decode()
                                 .unwrap(),
@@ -37,7 +37,7 @@ fn main() {
                 GameObject::new(
                     vec![Box::new(Sprite::new(
                         Some(
-                            ImageReader::open("src/bin/resources/command_center.png")
+                            ImageReader::open("src/bin/resources/tall_house.png")
                                 .unwrap()
                                 .decode()
                                 .unwrap(),
@@ -62,7 +62,7 @@ fn main() {
                 GameObject::new(
                     vec![Box::new(Sprite::new(
                         Some(
-                            ImageReader::open("src/bin/resources/command_center.png")
+                            ImageReader::open("src/bin/resources/tall_house.png")
                                 .unwrap()
                                 .decode()
                                 .unwrap(),
@@ -87,7 +87,7 @@ fn main() {
             ],
             vec![Box::new(Sprite::new(
                 Some(
-                    ImageReader::open("src/bin/resources/battlecruiser_main.png")
+                    ImageReader::open("src/bin/resources/white_ship.png")
                         .unwrap()
                         .decode()
                         .unwrap(),
