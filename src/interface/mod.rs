@@ -42,23 +42,23 @@ pub fn create_gameobj_vec(objs: &[ObjectWithImage]) -> Vec<GameObject> {
         ));
         z_coord += 1;
     }
-    return res;
+    res
 }
 
 /// A function for initializing ObjectWithImage which is a simplified interface of GameObject
 pub fn create_obj_with_img(image_path: &str, x: i32, y: i32, has_shadow: bool) -> ObjectWithImage {
-    return ObjectWithImage {
+    ObjectWithImage {
         image_path,
         x,
         y,
         has_shadow,
-    };
+    }
 }
 
 /// A function for initializing the Scene object based on ObjectWithImage vector and main object
 pub fn init_scene(objs: &[ObjectWithImage], main_obj: ObjectWithImage) -> Scene {
     let game_objs = create_gameobj_vec(objs);
-    return Scene::new(
+    Scene::new(
         game_objs,
         vec![Box::new(Sprite::new(
             Some(
@@ -76,12 +76,12 @@ pub fn init_scene(objs: &[ObjectWithImage], main_obj: ObjectWithImage) -> Scene 
             z: 0,
             is_relative: false,
         },
-    );
+    )
 }
 
 pub fn init_engine(scene: Scene, width: u32, height: u32) -> GameEngine {
-    return GameEngine::new(
+    GameEngine::new(
         Box::new(EngineConfig::new(Resolution::new(width, height))),
         scene,
-    );
+    )
 }
