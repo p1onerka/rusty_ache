@@ -31,6 +31,10 @@ impl Component for Sprite {
         &self.image
     }
 
+    fn get_shadow_unchecked(&self) -> bool {
+        self.shadow
+    }
+
     fn get_sprite_offset_unchecked(&self) -> Option<(i32, i32)> {
         Some(self.offset)
     }

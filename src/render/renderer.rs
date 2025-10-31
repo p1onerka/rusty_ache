@@ -36,10 +36,6 @@ pub struct Renderer {
     prev_frame: Vec<(u8, u8, u8, u8)>,
     //renderable: Vec<Renderable>,
     pub scene_manager: SceneManager,
-
-    background_cache: Vec<(u8, u8, u8, u8)>,
-    background_offset: (i32, i32),
-    last_cam_pos: (i32, i32),
 }
 
 impl Renderer {
@@ -58,10 +54,6 @@ impl Renderer {
             prev_frame: init_frame.clone(),
             //renderable: Vec::new(),
             scene_manager,
-
-            background_cache: init_frame,
-            background_offset: (0, 0),
-            last_cam_pos: (0,0)
         }
     }
 
@@ -89,6 +81,7 @@ impl Renderer {
         position: (i32, i32),
         camera_top: (i32, i32),
         frame_size: (i32, i32),
+        has_shadow: bool,
     ) {
         let (frame_w, frame_h) = frame_size;
 
@@ -116,27 +109,28 @@ impl Renderer {
                     continue;
                 }
 
-                // shadow
-                let sx_i_shadow = wx + OFFSET.0 - camera_top.0;
-                let sy_i_shadow = camera_top.1 - wy + OFFSET.1;
-                if sx_i_shadow < 0 || sy_i_shadow < 0 {
-                    continue;
+                if has_shadow {
+                    let sx_i_shadow = wx + OFFSET.0 - camera_top.0;
+                    let sy_i_shadow = camera_top.1 - wy + OFFSET.1;
+                    if sx_i_shadow < 0 || sy_i_shadow < 0 {
+                        continue;
+                    }
+                    let sx_shadow = sx_i_shadow as u32;
+                    let sy_shadow = sy_i_shadow as u32;
+                    if sx_shadow >= frame_w as u32 || sy_shadow >= frame_h as u32 {
+                        continue;
+                    }
+                    let idx = (sy_shadow * frame_w as u32 + sx_shadow) as usize;
+                    let existing = frame[idx];
+                    let alpha = SHADOW_OPAQUENESS as f32 / 255.0;
+                    let blended = (
+                        (existing.0 as f32 * (1.0 - alpha)) as u8,
+                        (existing.1 as f32 * (1.0 - alpha)) as u8,
+                        (existing.2 as f32 * (1.0 - alpha)) as u8,
+                        255,
+                    );
+                    frame[idx] = blended;
                 }
-                let sx_shadow = sx_i_shadow as u32;
-                let sy_shadow = sy_i_shadow as u32;
-                if sx_shadow >= frame_w as u32 || sy_shadow >= frame_h as u32 {
-                    continue;
-                }
-                let idx = (sy_shadow * frame_w as u32 + sx_shadow) as usize;
-                let existing = frame[idx];
-                let alpha = SHADOW_OPAQUENESS as f32 / 255.0;
-                let blended = (
-                    (existing.0 as f32 * (1.0 - alpha)) as u8,
-                    (existing.1 as f32 * (1.0 - alpha)) as u8,
-                    (existing.2 as f32 * (1.0 - alpha)) as u8,
-                    255,
-                );
-                frame[idx] = blended;
 
                 // map world -> screen coordinates
                 let sx_i = wx - camera_top.0;
@@ -187,7 +181,7 @@ impl Renderer {
 
         // TODO: what happens when two objects have the same z?
         let _uids_by_z = HashMap::<u32, usize>::new();
-        for (obj, img, offset) in renderable {
+        for (obj, img, offset, has_shadow) in renderable {
             let pos = Position {
                 x: obj.position.x + offset.0,
                 y: obj.position.y + offset.1,
@@ -212,6 +206,7 @@ impl Renderer {
                 (pos.x, pos.y),
                 (main_object.position.x, main_object.position.y),
                 (self.resolution.width as i32, self.resolution.height as i32),
+                has_shadow
             );
             self.prev_frame = frame.clone();
         }
