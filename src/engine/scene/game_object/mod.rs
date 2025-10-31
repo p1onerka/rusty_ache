@@ -30,9 +30,9 @@ pub trait Object {
 
     fn update_position(&mut self, position: Position) -> Result<(), GameObjectError>;
 
-    fn add_position(&mut self, vec: (i32, i32)) -> ();
+    fn add_position(&mut self, vec: (i32, i32));
 
-    fn run_action(&self) -> ();
+    fn run_action(&self);
 }
 
 pub struct GameObject {
