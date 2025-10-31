@@ -1,8 +1,16 @@
 use image::ImageReader;
 
-use crate::{engine::{config::{Config, EngineConfig}, scene::{
-    game_object::{components::sprite::Sprite, GameObject, Object, Position}, Scene
-}, Engine, GameEngine}, Resolution};
+use crate::{
+    Resolution,
+    engine::{
+        Engine, GameEngine,
+        config::{Config, EngineConfig},
+        scene::{
+            Scene,
+            game_object::{GameObject, Object, Position, components::sprite::Sprite},
+        },
+    },
+};
 
 #[derive(Clone)]
 pub struct ObjectWithImage<'a> {
@@ -73,5 +81,7 @@ pub fn init_scene(objs: &[ObjectWithImage], main_obj: ObjectWithImage) -> Scene 
 
 pub fn init_engine(scene: Scene, width: u32, height: u32) -> GameEngine {
     return GameEngine::new(
-        Box::new(EngineConfig::new(Resolution::new(width, height))), scene)
+        Box::new(EngineConfig::new(Resolution::new(width, height))),
+        scene,
+    );
 }

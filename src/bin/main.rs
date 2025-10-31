@@ -1,9 +1,9 @@
+use rusty_ache::engine::Engine;
+use rusty_ache::engine::scene::game_object::GameObject;
 use rusty_ache::engine::scene::game_object::components::script::Script;
 use rusty_ache::engine::scene::game_object::position::Position;
-use rusty_ache::engine::scene::game_object::GameObject;
-use rusty_ache::engine::Engine;
-use rusty_ache::screen::{HEIGHT, WIDTH};
 use rusty_ache::interface::{create_obj_with_img, init_engine, init_scene};
+use rusty_ache::screen::{HEIGHT, WIDTH};
 
 fn main() {
     let tower_obj = create_obj_with_img("src/bin/resources/tower.png", 90, 40, true);
