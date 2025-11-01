@@ -44,3 +44,43 @@ pub fn make_init_frame(image: Option<DynamicImage>) -> Vec<(u8, u8, u8, u8)> {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    const DEFAULT_BACKGROUND: (u8, u8, u8, u8) = (
+                DEFAULT_BACKGROUND_COLOR.0,
+                DEFAULT_BACKGROUND_COLOR.1,
+                DEFAULT_BACKGROUND_COLOR.2,
+                DEFAULT_BACKGROUND_COLOR.3,
+            );
+
+    #[test]
+    fn test_make_init_default_background() {
+        let mut vector = make_init_default_background();
+        for _ in 0..HEIGHT {
+        for _ in 0..WIDTH {
+            assert_eq!(vector.pop(), Some(DEFAULT_BACKGROUND));
+        }}
+    }
+
+    #[test]
+    fn test_make_init_frame_none() {
+        let image  = None;
+        let mut vector = make_init_frame(image);
+        for _ in 0..HEIGHT {
+        for _ in 0..WIDTH {
+            assert_eq!(vector.pop(), Some(DEFAULT_BACKGROUND));
+        }}
+    }
+
+    #[test]
+    fn test_make_init_frame_some_image() {
+        let image  = DynamicImage::new_rgb8(WIDTH, HEIGHT);
+        let mut vector = make_init_frame(Some(image));
+        for _ in 0..HEIGHT {
+        for _ in 0..WIDTH {
+            assert_eq!(vector.pop(), Some((0, 0, 0, 255)));
+        }}
+    }
+}
