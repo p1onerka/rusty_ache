@@ -29,12 +29,12 @@ impl Scene {
         }
     }
 
-    pub fn init(&self) -> Vec<(&GameObject, &DynamicImage, (i32, i32))> {
-        let mut renderable_objects: Vec<(&GameObject, &DynamicImage, (i32, i32))> = vec![];
+    pub fn init(&self) -> Vec<(&GameObject, &DynamicImage, (i32, i32), bool)> {
+        let mut renderable_objects: Vec<(&GameObject, &DynamicImage, (i32, i32), bool)> = vec![];
         for obj in self.manager.game_objects.values() {
             for component in obj.components.iter() {
                 if component.get_component_type() == ComponentType::Sprite {
-                    match &component.get_shadow_unchecked() {
+                    /*match &component.get_shadow_unchecked() {
                         None => {}
                         Some(img) => {
                             renderable_objects.push((
@@ -46,11 +46,12 @@ impl Scene {
                                 ),
                             ));
                         }
-                    };
+                    };*/
                     renderable_objects.push((
                         obj,
                         component.get_sprite_unchecked().as_ref().unwrap(),
                         component.get_sprite_offset_unchecked().unwrap(),
+                        component.get_shadow_unchecked(),
                     ));
                 }
             }
@@ -59,7 +60,7 @@ impl Scene {
 
         for component in self.main_object.components.iter() {
             if component.get_component_type() == ComponentType::Sprite {
-                if let Some(img) = component.get_shadow_unchecked() {
+                /*if let Some(img) = component.get_shadow_unchecked() {
                     renderable_objects.push((
                         &self.main_object,
                         &img.0,
@@ -68,13 +69,14 @@ impl Scene {
                             component.get_sprite_offset_unchecked().unwrap_or((0, 0)).1 + img.1.1,
                         ),
                     ));
-                }
+                }*/
 
                 if let Some(sprite_img) = component.get_sprite_unchecked().as_ref() {
                     renderable_objects.push((
                         &self.main_object,
                         sprite_img,
                         component.get_sprite_offset_unchecked().unwrap_or((0, 0)),
+                        component.get_shadow_unchecked(),
                     ));
                 }
             }

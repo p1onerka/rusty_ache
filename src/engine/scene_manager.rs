@@ -17,7 +17,7 @@ impl SceneManager {
         &self.active_scene
     }
 
-    pub fn init_active_scene(&self) -> Vec<(&GameObject, &DynamicImage, (i32, i32))> {
+    pub fn init_active_scene(&self) -> Vec<(&GameObject, &DynamicImage, (i32, i32), bool)> {
         self.active_scene.init()
     }
 }
@@ -41,7 +41,7 @@ mod tests {
     }
 
     fn create_test_components() -> Vec<Box<dyn Component + Send + Sync>> {
-        vec![Box::new(Sprite::new(None, None, (0, 0)))]
+        vec![Box::new(Sprite::new(None, false, (0, 0)))]
     }
 
     fn create_simple_scene() -> Scene {
@@ -52,7 +52,7 @@ mod tests {
         )
     }
 
-    fn create_scene_with_sprites(sprite_count: usize) -> Scene {
+    fn _create_scene_with_sprites(sprite_count: usize) -> Scene {
         let mut objects = vec![];
 
         for i in 0..sprite_count {

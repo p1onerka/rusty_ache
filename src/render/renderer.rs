@@ -10,7 +10,9 @@ use crate::screen::{HEIGHT, WIDTH};
 
 use super::utils::make_init_frame;
 
-pub const DEFAULT_BACKGROUND_COLOR: (u8, u8, u8, u8) = (245, 245, 220, 255);
+pub const DEFAULT_BACKGROUND_COLOR: (u8, u8, u8, u8) = (98, 96, 96, 255);
+pub const OFFSET: (i32, i32) = (10, -10);
+pub const SHADOW_OPAQUENESS: u8 = 80;
 
 pub struct Renderable {
     pub uid: u32,
@@ -28,28 +30,24 @@ pub struct Rectangle {
 /// * Choosing which pixels to recolor based on info from Engine.
 /// * Forming recolored frame and sending it to Screen.
 pub struct Renderer {
-    //frame_ready: bool,
     resolution: Resolution,
     background: Option<DynamicImage>,
     prev_frame: Vec<(u8, u8, u8, u8)>,
-    //renderable: Vec<Renderable>,
     pub scene_manager: SceneManager,
 }
 
 impl Renderer {
-    // TODO: add here first edition of image into Screen. it will contain only slice of background
     pub(crate) fn new(
         resolution: Resolution,
         background: Option<DynamicImage>,
         scene_manager: SceneManager,
     ) -> Self {
         let background_clone = background.clone();
+        let init_frame = make_init_frame(background_clone);
         Renderer {
-            //frame_ready: false,
             resolution,
             background,
-            prev_frame: make_init_frame(background_clone),
-            //renderable: Vec::new(),
+            prev_frame: init_frame.clone(),
             scene_manager,
         }
     }
@@ -78,6 +76,7 @@ impl Renderer {
         position: (i32, i32),
         camera_top: (i32, i32),
         frame_size: (i32, i32),
+        has_shadow: bool,
     ) {
         let (frame_w, frame_h) = frame_size;
 
@@ -105,6 +104,29 @@ impl Renderer {
                     continue;
                 }
 
+                if has_shadow {
+                    let sx_i_shadow = wx + OFFSET.0 - camera_top.0;
+                    let sy_i_shadow = camera_top.1 - wy + OFFSET.1;
+                    if sx_i_shadow < 0 || sy_i_shadow < 0 {
+                        continue;
+                    }
+                    let sx_shadow = sx_i_shadow as u32;
+                    let sy_shadow = sy_i_shadow as u32;
+                    if sx_shadow >= frame_w as u32 || sy_shadow >= frame_h as u32 {
+                        continue;
+                    }
+                    let idx = (sy_shadow * frame_w as u32 + sx_shadow) as usize;
+                    let existing = frame[idx];
+                    let alpha = SHADOW_OPAQUENESS as f32 / 255.0;
+                    let blended = (
+                        (existing.0 as f32 * (1.0 - alpha)) as u8,
+                        (existing.1 as f32 * (1.0 - alpha)) as u8,
+                        (existing.2 as f32 * (1.0 - alpha)) as u8,
+                        255,
+                    );
+                    frame[idx] = blended;
+                }
+
                 // map world -> screen coordinates
                 let sx_i = wx - camera_top.0;
                 let sy_i = camera_top.1 - wy;
@@ -119,7 +141,7 @@ impl Renderer {
                     continue;
                 }
 
-                // fully opaque → just overwrite
+                // fully opaque => just overwrite
                 let idx = (sy * frame_w as u32 + sx) as usize;
                 let mut shadowed = src;
                 if src[0] == 0 && src[1] == 0 && src[2] == 0 && src[3] != 255 {
@@ -135,14 +157,12 @@ impl Renderer {
 
     /// Form new frame based on previous one and info from Engine
     pub(crate) fn render(&mut self) {
-        //println!("Starting render");
         // find cam rectangle
         let main_object = &self.scene_manager.active_scene.main_object;
         let mut frame: Vec<(u8, u8, u8, u8)> = make_init_frame(self.background.clone());
         //println!("Main object collected");
         let renderable = self.scene_manager.init_active_scene();
 
-        //println!("Renderable collected");
         let _camera_rect = Rectangle {
             top_left: (main_object.position.x, main_object.position.y),
             bot_right: (
@@ -150,11 +170,9 @@ impl Renderer {
                 main_object.position.y - HEIGHT as i32,
             ),
         };
-        //println!("{} {}", main_object.position.y, HEIGHT);
 
-        // TODO: what happens when two objects have the same z?
         let _uids_by_z = HashMap::<u32, usize>::new();
-        for (obj, img, offset) in renderable {
+        for (obj, img, offset, has_shadow) in renderable {
             let pos = Position {
                 x: obj.position.x + offset.0,
                 y: obj.position.y + offset.1,
@@ -168,10 +186,7 @@ impl Renderer {
                 top_left: (pos.x, pos.y),
                 bot_right: im_bot_right,
             };
-            //println!(
-            //"{} {} {} {}",
-            //im_rect.bot_right.0, im_rect.bot_right.1, im_rect.top_left.0, im_rect.top_left.1
-            //);
+
             Self::blit_sprite(
                 &mut frame,
                 img,
@@ -179,6 +194,7 @@ impl Renderer {
                 (pos.x, pos.y),
                 (main_object.position.x, main_object.position.y),
                 (self.resolution.width as i32, self.resolution.height as i32),
+                has_shadow,
             );
             self.prev_frame = frame.clone();
         }
