@@ -15,6 +15,10 @@ Run the project:
   cargo run --bin main
 ```
 
+## Demo
+
+[Demo](resources/demo.mov)
+
 ## Docs
 Project documentation is availible [here](https://p1onerka.github.io/rusty_ache/rusty_ache/index.html).
 
