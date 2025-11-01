@@ -205,3 +205,192 @@ impl Renderer {
         Some(self.prev_frame.clone())
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use image::{Rgba, RgbaImage};
+
+    use crate::interface::{create_obj_with_img, init_scene};
+
+    use super::*;
+
+    const DEFAULT_BACKGROUND: (u8, u8, u8, u8) = (
+                DEFAULT_BACKGROUND_COLOR.0,
+                DEFAULT_BACKGROUND_COLOR.1,
+                DEFAULT_BACKGROUND_COLOR.2,
+                DEFAULT_BACKGROUND_COLOR.3,
+            );
+
+    fn test_init_renderer() -> Renderer {
+        let resolution = Resolution::new(200, 200);
+        let background = None;
+        let objs = [create_obj_with_img("image_path", 200, 200, false)];
+        let main_obj = create_obj_with_img("image", 300, 300, true);
+        let main_scene = init_scene(&objs, main_obj);
+        let scene_manager = SceneManager::new(main_scene);
+        let renderer = Renderer::new(resolution, background, scene_manager);
+        return renderer
+    }
+
+    fn create_sprite_with_color(width: u32, height: u32, color: [u8;4]) -> DynamicImage {
+        let mut img = RgbaImage::new(width, height);
+        for y in 0..height {
+            for x in 0..width {
+                img.put_pixel(x, y, Rgba(color));
+            }
+        }
+        DynamicImage::ImageRgba8(img)
+    }
+
+    // #[test]
+    // fn test_renderer() {
+    //     let renderer = test_init_renderer();
+    //     assert_eq!(renderer.resolution.height, 200);
+    //     assert_eq!(renderer.resolution.height, 200);
+    //     assert_eq!(renderer.background, None);
+    //     let mut vector = renderer.prev_frame;
+    //     for _ in 0..HEIGHT {
+    //     for _ in 0..WIDTH {
+    //         assert_eq!(vector.pop(), Some(DEFAULT_BACKGROUND));
+    //     }}
+    // }
+
+    #[test]
+    fn test_find_intersection_symmetric_rectangles() {
+        let fst = Rectangle{ top_left: (0, 200), bot_right: (200, 0)};
+        let snd = Rectangle{ top_left: (0, 200), bot_right: (200, 0)};
+        let result = Renderer::_find_intersection(&fst, &snd);
+        match result {
+            None => assert!(false),
+            Some(res) => {
+                assert_eq!(res.top_left, (0, 200));
+                assert_eq!(res.bot_right, (200, 0));
+            }
+        }
+    }
+
+    #[test]
+    fn test_find_intersection_simple_case() {
+        let fst = Rectangle{ top_left: (0, 200), bot_right: (200, 0)};
+        let snd = Rectangle{ top_left: (0, 200), bot_right: (150, 150)};
+        let result = Renderer::_find_intersection(&fst, &snd);
+        match result {
+            None => assert!(false),
+            Some(res) => {
+                assert_eq!(res.top_left, (0, 200));
+                assert_eq!(res.bot_right, (150, 150));
+            }
+        }
+    }
+
+    #[test]
+    fn test_find_intersection_zero_intersection() {
+        let fst = Rectangle{ top_left: (0, 200), bot_right: (200, 0)};
+        let snd = Rectangle{ top_left: (-200, 200), bot_right: (0, 0)};
+        let result = Renderer::_find_intersection(&fst, &snd);
+        match result {
+            None => assert!(true),
+            Some(_) => assert!(false)
+        }
+    }
+
+    #[test]
+    fn test_fully_opaque_no_shadow() {
+
+        let mut frame = vec![(0u8, 0u8, 0u8, 0u8); 10*10];
+        let sprite = create_sprite_with_color(3, 3, [255, 0, 0, 255]); // red opaque
+        let visible_area = Rectangle { top_left: (0, 5), bot_right: (5, 0) };
+        Renderer::blit_sprite(
+            &mut frame,
+            &sprite,
+            &visible_area,
+            (1, 3),
+            (0, 5),
+            (10, 10),
+            false,
+        );
+        let idx = (2 * 10 + 1) as usize;
+        assert_eq!(frame[idx].0, 255);
+        assert_eq!(frame[idx].3, 255);
+    }
+    
+
+    #[test]
+    fn test_transparent_pixels_skipped() {
+        let mut frame = vec![(100, 100, 100, 100); 10*10];
+        let mut sprite_img = RgbaImage::new(2, 2);
+        sprite_img.put_pixel(0, 0, Rgba([0, 0, 0, 0]));       // transparent
+        sprite_img.put_pixel(1, 0, Rgba([50, 50, 50, 255]));  // opaque
+        sprite_img.put_pixel(0, 1, Rgba([10, 10, 10, 0]));    // transparent
+        sprite_img.put_pixel(1, 1, Rgba([20, 20, 20, 255]));  // opaque
+        let sprite = DynamicImage::ImageRgba8(sprite_img);
+        let visible_area = Rectangle { top_left: (1, 2), bot_right: (3, 0) };
+        Renderer::blit_sprite(
+            &mut frame,
+            &sprite,
+            &visible_area,
+            (1, 1),
+            (0, 2),
+            (10, 10),
+            false,
+        );
+
+        assert_eq!(frame[1 * 10 + 0], (100, 100, 100, 100));
+    }
+
+    #[test]
+    fn test_shadow_pixels_with_partial_alpha_subtract() {
+        let mut frame = vec![(100, 100, 100, 255); 10*10];
+        let mut sprite_img = RgbaImage::new(1, 1);
+        sprite_img.put_pixel(0, 0, Rgba([0, 0, 0, 10])); // partially transparent black pixel
+        let sprite = DynamicImage::ImageRgba8(sprite_img);
+        let visible_area = Rectangle { top_left: (0, 1), bot_right: (1, 0) };
+        Renderer::blit_sprite(
+            &mut frame,
+            &sprite,
+            &visible_area,
+            (0, 0),
+            (0, 1),
+            (10, 10),
+            false,
+        );
+
+        let idx = (1 * 10 + 0) as usize;
+        assert_eq!(frame[idx].0, 90);
+        assert_eq!(frame[idx].1, 90);
+        assert_eq!(frame[idx].2, 90);
+    }
+
+    #[test]
+    fn test_pixels_outside_visible_area_not_drawn() {
+        let mut frame = vec![(50, 50, 50, 255); 10*10];
+        let sprite = create_sprite_with_color(2, 2, [255, 255, 255, 255]);
+        let visible_area = Rectangle { top_left: (0, 2), bot_right: (2, 1) };
+        Renderer::blit_sprite(
+            &mut frame,
+            &sprite,
+            &visible_area,
+            (3, 3),
+            (0, 2),
+            (10, 10),
+            false,
+        );
+
+        for color in frame.iter() {
+            assert_eq!(*color, (50, 50, 50, 255));
+        }
+    }
+
+    // #[test]
+    // fn test_emit() {
+    //     let mut renderer = test_init_renderer();
+    //     let result = renderer.emit();
+    //     match result {
+    //         None => assert!(false),
+    //         Some(mut res) => for _ in 0..HEIGHT {
+    //     for _ in 0..WIDTH {
+    //         assert_eq!(res.pop(), Some(DEFAULT_BACKGROUND));
+    //     }}
+    //     }
+    // }
+}

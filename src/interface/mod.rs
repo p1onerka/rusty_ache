@@ -85,3 +85,44 @@ pub fn init_engine(scene: Scene, width: u32, height: u32) -> GameEngine {
         scene,
     )
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_create_obj_with_img() {
+        let obj = create_obj_with_img("./image", 100, 100, true);
+        assert_eq!(obj.image_path, "./image");
+        assert_eq!(obj.x, 100);
+        assert_eq!(obj.y, 100);
+        assert!(obj.has_shadow);
+    }
+
+    #[test]
+    fn test_create_gameobj_vec_empty() {
+        let objs = [];
+        let owi = create_gameobj_vec(&objs);
+        assert_eq!(owi.len(), 0)
+    }
+
+    #[test]
+    fn test_create_gameobj_vec() {
+        let objs = [create_obj_with_img("image_path", 200, 200, false)];
+        let owi = create_gameobj_vec(&objs);
+        assert_eq!(owi.len(), objs.len());
+        assert_eq!(objs[0].x, owi[0].position.x);
+        assert_eq!(objs[0].y, owi[0].position.y);
+    }
+
+    #[test]
+    fn test_init_scene() {
+        let objs = [create_obj_with_img("image_path", 200, 200, false)];
+        let main_obj = create_obj_with_img("image", 300, 300, true);
+        let main_obj_x = main_obj.x;
+        let main_obj_y = main_obj.y;
+        let scene = init_scene(&objs, main_obj);
+        assert_eq!(scene.main_object.position.x, main_obj_x);
+        assert_eq!(scene.main_object.position.y, main_obj_y);
+    }
+}
