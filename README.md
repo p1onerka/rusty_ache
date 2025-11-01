@@ -39,6 +39,8 @@ This game engine project supports the following platforms:
 - C compiler (`gcc`/`clang`) for building native dependencies
 - ≥ 8GB RAM recommended
 
+## Performance
+
 Below is a graph showing the dependence of FPS on the number of simultaneously rendered objects, created under the following conditions:
 
 - Setup: MacBook M1, 8Gb RAM
