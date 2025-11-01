@@ -65,9 +65,7 @@ pub struct App {
     //pub(crate) key_pressed: Arc<RwLock<Option<KeyCode>>>,
     pub(crate) keys_pressed: Arc<Keys>,
 
-    /// Currrent FPS accumulator
     frame_count: u32,
-    /// For FPS compitation
     last_fps_report_time: Instant,
 }
 
