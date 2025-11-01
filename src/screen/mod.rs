@@ -65,9 +65,9 @@ pub struct App {
     //pub(crate) key_pressed: Arc<RwLock<Option<KeyCode>>>,
     pub(crate) keys_pressed: Arc<Keys>,
 
-    /// Currrent FPS accumulator (probably delete later)
+    /// Currrent FPS accumulator
     frame_count: u32,
-    /// For FPS compitation (probably delete later)
+    /// For FPS compitation
     last_fps_report_time: Instant,
 }
 
@@ -153,11 +153,6 @@ impl ApplicationHandler for App {
                 self.frame_count += 1;
                 let elapsed = self.last_fps_report_time.elapsed();
                 if elapsed >= Duration::from_secs(1) {
-                    //let fps = self.frame_count as f64 / elapsed.as_secs_f64();
-                    //if let Some(window_arc) = self.window.read().unwrap().as_ref() {
-                    //     window_arc.set_title(&format!("FPS: {:.2}", fps));
-                    //}
-                    //dbg!(fps);
                     self.frame_count = 0;
                     self.last_fps_report_time = Instant::now();
                 }
