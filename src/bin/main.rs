@@ -16,7 +16,18 @@ fn main() {
 
     let hermit_house_obj = create_obj_with_img("src/bin/resources/junk_house.png", 400, 240, true);
 
-    let scene = init_scene(&[cabin_obj, skyscraper_obj, hermit_house_obj, tower_obj, tall_house_obj, junk_house_obj, pool_house_obj], main_ship_obj);
+    let scene = init_scene(
+        &[
+            cabin_obj,
+            skyscraper_obj,
+            hermit_house_obj,
+            tower_obj,
+            tall_house_obj,
+            junk_house_obj,
+            pool_house_obj,
+        ],
+        main_ship_obj,
+    );
     let mut engine = init_engine(scene, WIDTH, HEIGHT);
     engine.render().unwrap();
     engine.run().unwrap()
