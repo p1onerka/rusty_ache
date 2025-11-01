@@ -6,12 +6,28 @@ use rusty_ache::interface::{create_obj_with_img, init_engine, init_scene};
 use rusty_ache::screen::{HEIGHT, WIDTH};
 
 fn main() {
-    let tower_obj = create_obj_with_img("src/bin/resources/tower.png", 90, 40, true);
-    let junk_house_obj = create_obj_with_img("src/bin/resources/junk_house.png", 130, -100, true);
+    let tower_obj = create_obj_with_img("src/bin/resources/tower.png", 82, 37, true);
+    let junk_house_obj = create_obj_with_img("src/bin/resources/junk_house.png", 150, -150, true);
     let pool_house_obj = create_obj_with_img("src/bin/resources/pool_house.png", 15, -25, true);
+    let tall_house_obj = create_obj_with_img("src/bin/resources/tall_house.png", 210, -80, true);
+    let skyscraper_obj = create_obj_with_img("src/bin/resources/skyscraper.png", 150, 55, true);
+    let cabin_obj = create_obj_with_img("src/bin/resources/cabin.png", 280, -60, true);
     let main_ship_obj = create_obj_with_img("src/bin/resources/white_ship.png", 0, 0, true);
 
-    let scene = init_scene(&[tower_obj, junk_house_obj, pool_house_obj], main_ship_obj);
+    let hermit_house_obj = create_obj_with_img("src/bin/resources/junk_house.png", 400, 240, true);
+
+    let scene = init_scene(
+        &[
+            cabin_obj,
+            skyscraper_obj,
+            hermit_house_obj,
+            tower_obj,
+            tall_house_obj,
+            junk_house_obj,
+            pool_house_obj,
+        ],
+        main_ship_obj,
+    );
     let mut engine = init_engine(scene, WIDTH, HEIGHT);
     engine.render().unwrap();
     engine.run().unwrap()

@@ -65,9 +65,7 @@ pub struct App {
     //pub(crate) key_pressed: Arc<RwLock<Option<KeyCode>>>,
     pub(crate) keys_pressed: Arc<Keys>,
 
-    /// Currrent FPS accumulator (probably delete later)
     frame_count: u32,
-    /// For FPS compitation (probably delete later)
     last_fps_report_time: Instant,
 }
 
@@ -153,11 +151,6 @@ impl ApplicationHandler for App {
                 self.frame_count += 1;
                 let elapsed = self.last_fps_report_time.elapsed();
                 if elapsed >= Duration::from_secs(1) {
-                    //let fps = self.frame_count as f64 / elapsed.as_secs_f64();
-                    //if let Some(window_arc) = self.window.read().unwrap().as_ref() {
-                    //     window_arc.set_title(&format!("FPS: {:.2}", fps));
-                    //}
-                    //dbg!(fps);
                     self.frame_count = 0;
                     self.last_fps_report_time = Instant::now();
                 }
@@ -172,7 +165,6 @@ impl ApplicationHandler for App {
                     },
                 ..
             } => {
-                //println!("pressed {:?}", key_code);
                 let pressed = state.is_pressed();
 
                 match key_code {
@@ -250,72 +242,3 @@ pub fn example() {
     let mut app = App::new(shared_pixel_data, shared_window);
     let _ = event_loop.run_app(&mut app);
 }
-
-/*pub fn example_keys() {
-    let initial_resolution = Resolution {
-        width: WIDTH,
-        height: HEIGHT,
-    };
-    const DEFAULT_COLOR: (u8, u8, u8, u8) = (0xF5, 0xDE, 0xB3, 0xFF);
-    const RED: (u8, u8, u8, u8) = (0xFF, 0x00, 0x00, 0xFF);
-    const BLUE: (u8, u8, u8, u8) = (0x00, 0x00, 0xFF, 0xFF);
-    const GREEN: (u8, u8, u8, u8) = (0x00, 0xFF, 0x00, 0xFF);
-    const PURPLE: (u8, u8, u8, u8) = (0x80, 0x00, 0x80, 0xFF);
-    let initial_pixels =
-        vec![DEFAULT_COLOR; (initial_resolution.width * initial_resolution.height) as usize];
-
-    let shared_pixel_data = Arc::new(RwLock::new(initial_pixels));
-    let shared_window = Arc::new(RwLock::new(None));
-
-    let shared_pixel_data_clone = shared_pixel_data.clone();
-    let shared_window_clone = shared_window.clone();
-
-    let mut app = App::new(shared_pixel_data, shared_window);
-    //let key_pressed_clone = app.key_pressed.clone();
-    let keys_pressed_clone = app.keys_pressed.clone();
-    // Producer thread
-    thread::spawn(move || {
-        let window_arc: Arc<Window> = loop {
-            if let Some(arc) = shared_window_clone.read().unwrap().clone() {
-                break arc;
-            }
-            thread::sleep(Duration::from_millis(100));
-        };
-
-        //dbg!("Producer has started");
-
-        let screen_size = (WIDTH * HEIGHT) as usize;
-        loop {
-            let cur_keys_state = keys_pressed_clone.read().unwrap();
-            let color = if cur_keys_state.contains(&KeyCode::KeyW) {
-                RED
-            } else if cur_keys_state.contains(&KeyCode::KeyA) {
-                BLUE
-            }
-            else if cur_keys_state.contains(&KeyCode::KeyS) {
-                GREEN
-            }
-            else if cur_keys_state.contains(&KeyCode::KeyD) {
-                PURPLE
-            }
-            else {
-                DEFAULT_COLOR
-            };
-            {
-                let mut pixels = shared_pixel_data_clone
-                    .write()
-                    .expect("Producer couldn't lock pixel data");
-
-                for p in pixels.iter_mut().take(screen_size) {
-                    *p = color;
-                }
-            }
-            window_arc.request_redraw();
-        }
-    });
-
-    let event_loop = EventLoop::new().unwrap();
-    event_loop.set_control_flow(ControlFlow::Wait);
-
-    let _ = event_loop.run_app(&mut app);
-}*/

@@ -10,9 +10,9 @@ use crate::screen::{HEIGHT, WIDTH};
 
 use super::utils::make_init_frame;
 
-pub const DEFAULT_BACKGROUND_COLOR: (u8, u8, u8, u8) = (103, 104, 122, 255);
+pub const DEFAULT_BACKGROUND_COLOR: (u8, u8, u8, u8) = (98, 96, 96, 255);
 pub const OFFSET: (i32, i32) = (10, -10);
-pub const SHADOW_OPAQUENESS: u8 = 70;
+pub const SHADOW_OPAQUENESS: u8 = 80;
 
 pub struct Renderable {
     pub uid: u32,
@@ -30,16 +30,13 @@ pub struct Rectangle {
 /// * Choosing which pixels to recolor based on info from Engine.
 /// * Forming recolored frame and sending it to Screen.
 pub struct Renderer {
-    //frame_ready: bool,
     resolution: Resolution,
     background: Option<DynamicImage>,
     prev_frame: Vec<(u8, u8, u8, u8)>,
-    //renderable: Vec<Renderable>,
     pub scene_manager: SceneManager,
 }
 
 impl Renderer {
-    // TODO: add here first edition of image into Screen. it will contain only slice of background
     pub(crate) fn new(
         resolution: Resolution,
         background: Option<DynamicImage>,
@@ -48,11 +45,9 @@ impl Renderer {
         let background_clone = background.clone();
         let init_frame = make_init_frame(background_clone);
         Renderer {
-            //frame_ready: false,
             resolution,
             background,
             prev_frame: init_frame.clone(),
-            //renderable: Vec::new(),
             scene_manager,
         }
     }
@@ -162,14 +157,12 @@ impl Renderer {
 
     /// Form new frame based on previous one and info from Engine
     pub(crate) fn render(&mut self) {
-        //println!("Starting render");
         // find cam rectangle
         let main_object = &self.scene_manager.active_scene.main_object;
         let mut frame: Vec<(u8, u8, u8, u8)> = make_init_frame(self.background.clone());
         //println!("Main object collected");
         let renderable = self.scene_manager.init_active_scene();
 
-        //println!("Renderable collected");
         let _camera_rect = Rectangle {
             top_left: (main_object.position.x, main_object.position.y),
             bot_right: (
@@ -177,9 +170,7 @@ impl Renderer {
                 main_object.position.y - HEIGHT as i32,
             ),
         };
-        //println!("{} {}", main_object.position.y, HEIGHT);
 
-        // TODO: what happens when two objects have the same z?
         let _uids_by_z = HashMap::<u32, usize>::new();
         for (obj, img, offset, has_shadow) in renderable {
             let pos = Position {
@@ -195,10 +186,7 @@ impl Renderer {
                 top_left: (pos.x, pos.y),
                 bot_right: im_bot_right,
             };
-            //println!(
-            //"{} {} {} {}",
-            //im_rect.bot_right.0, im_rect.bot_right.1, im_rect.top_left.0, im_rect.top_left.1
-            //);
+
             Self::blit_sprite(
                 &mut frame,
                 img,
