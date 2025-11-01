@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["create_gameobj_vec","create_obj_with_img","init_engine","init_scene"],"struct":["ObjectWithImage"]};
