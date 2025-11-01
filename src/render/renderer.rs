@@ -10,9 +10,9 @@ use crate::screen::{HEIGHT, WIDTH};
 
 use super::utils::make_init_frame;
 
-pub const DEFAULT_BACKGROUND_COLOR: (u8, u8, u8, u8) = (103, 104, 122, 255);
+pub const DEFAULT_BACKGROUND_COLOR: (u8, u8, u8, u8) = (98, 96, 96, 255);
 pub const OFFSET: (i32, i32) = (10, -10);
-pub const SHADOW_OPAQUENESS: u8 = 70;
+pub const SHADOW_OPAQUENESS: u8 = 80;
 
 pub struct Renderable {
     pub uid: u32,
