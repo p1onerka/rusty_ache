@@ -17,7 +17,7 @@ Run the project:
 
 ## Demo
 
-[Demo](resources/demo.mov)
+![Demo](resources/demo_gif.gif)
 
 ## Docs
 Project documentation is availible [here](https://p1onerka.github.io/rusty_ache/rusty_ache/index.html).
