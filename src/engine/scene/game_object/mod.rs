@@ -1,3 +1,13 @@
+//! Defines the core game object entity and its behavior within the engine.
+//!
+//! This module provides the `Object` trait which outlines essential operations
+//! such as component management, position control, and script execution.
+//! The `GameObject` struct implements this trait as a concrete entity holding
+//! components, an optional script, and its current position.
+//!
+//! Error enums encapsulate possible failure modes in component handling,
+//! unique identifier issues, position updates, and unknown errors.
+
 use crate::engine::scene::game_object::components::script::Script;
 use crate::engine::scene::game_object::components::{Component, ComponentError, ComponentType};
 pub(crate) use crate::engine::scene::game_object::position::Position;
@@ -5,20 +15,30 @@ pub(crate) use crate::engine::scene::game_object::position::Position;
 pub mod components;
 pub mod position;
 
+/// Errors that can arise at the GameObject level.
 pub enum GameObjectError {
+    /// Represents an error originating from a component operation.
     ComponentError(ComponentError),
+    /// Error related to unique identifier (UID) management.
     UIDError(String),
+    /// Position-related errors.
     PositionError(String),
+    /// Catch-all variant for unknown or unexpected errors.
     UnknownError(String),
 }
 
-/// A trait describing the basic game object entity
+/// Defines an interface for game objects.
+///
+/// Game objects are entities with components, position, and optional behavior scripts.
+/// This trait enumerates constructor and methods for component management,
+/// position queries and mutations, and script-driven actions.
 pub trait Object {
     fn new(
         components: Vec<Box<dyn Component + Send + Sync>>,
         script: Option<Box<dyn Script + Send + Sync>>,
         position: Position,
     ) -> Self;
+
     fn add_component(
         &mut self,
         component: Box<dyn Component + Send + Sync>,
@@ -35,6 +55,8 @@ pub trait Object {
     fn run_action(&self);
 }
 
+/// The primary game object structure holding components, optional script, and position.
+/// Maximum 256 objects per 1 scene
 pub struct GameObject {
     pub components: Vec<Box<dyn Component + Send + Sync>>,
     pub script: Option<Box<dyn Script + Send + Sync>>,
@@ -42,6 +64,8 @@ pub struct GameObject {
 }
 
 impl Object for GameObject {
+    /// Constructs a new game object from components, script, and position.
+    /// Checks for sprite components to call related accessors.
     fn new(
         components: Vec<Box<dyn Component + Send + Sync>>,
         script: Option<Box<dyn Script + Send + Sync>>,
@@ -58,6 +82,9 @@ impl Object for GameObject {
             position,
         }
     }
+
+    /// Adds a component, performing sprite-specific checks if applicable.
+    /// Always returns Ok currently.
     fn add_component(
         &mut self,
         component: Box<dyn Component + Send + Sync>,
@@ -68,9 +95,13 @@ impl Object for GameObject {
         self.components.push(component);
         Ok(())
     }
+
+    /// Gets a reference to the current position.
     fn get_position(&self) -> Result<&Position, GameObjectError> {
         Ok(&self.position)
     }
+
+    /// Removes the component at the given index, or returns error if index is invalid.
     fn remove_component(&mut self, component_id: usize) -> Result<(), GameObjectError> {
         if component_id >= self.components.len() {
             return Err(GameObjectError::ComponentError(
@@ -81,19 +112,25 @@ impl Object for GameObject {
                 )),
             ));
         }
-
         self.components.remove(component_id);
         Ok(())
     }
+
+    /// Updates the position of the game object.
     fn update_position(&mut self, position: Position) -> Result<(), GameObjectError> {
         self.position = position;
         Ok(())
     }
+
+    /// Adds a relative (x, y) offset to the current position.
     fn add_position(&mut self, vec: (i32, i32)) {
         self.position.x += vec.0;
         self.position.y += vec.1;
     }
 
+    /// Runs the associated script action on the game object.
+    ///
+    /// Currently a stub; should be implemented to invoke `script.action`.
     fn run_action(&self) {}
 }
 

@@ -62,3 +62,48 @@ impl Script for MyScript {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use rusty_ache::engine::scene::game_object::{GameObject, Object, position::Position};
+
+    use crate::{MyScript, Script};
+
+    #[test]
+    fn test_new_script() {
+        let script = MyScript::new(false);
+        assert!(!script.is_downed)
+    }
+
+    #[test]
+    fn test_actions_is_downed_false() {
+        let mut script = MyScript::new(false);
+        let position = Position {
+            x: 15,
+            y: 25,
+            z: 35,
+            is_relative: false,
+        };
+        let game_object = &mut GameObject::new(vec![], None, position);
+        script.action(game_object);
+        assert_eq!(game_object.position.x, 15);
+        assert_eq!(game_object.position.y, 24);
+        assert_eq!(game_object.position.z, 35);
+    }
+
+    #[test]
+    fn test_actions_is_downed_true() {
+        let mut script = MyScript::new(true);
+        let position = Position {
+            x: 15,
+            y: 25,
+            z: 35,
+            is_relative: false,
+        };
+        let game_object = &mut GameObject::new(vec![], None, position);
+        script.action(game_object);
+        assert_eq!(game_object.position.x, 15);
+        assert_eq!(game_object.position.y, 26);
+        assert_eq!(game_object.position.z, 35);
+    }
+}

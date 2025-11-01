@@ -1,4 +1,9 @@
-//! A struct describing any entity that can be rendered
+//! Core rendering module responsible for composing frames from scene data and sending them to the screen.
+//!
+//! Defines data structures and functions for handling sprite rendering, including pixel blending,
+//! shadow effects, and frame management within the game engine.
+//!
+//! This module bridges the game's logical scene state and the graphical output visible on the screen.
 
 use image::{DynamicImage, GenericImageView};
 use std::collections::HashMap;
@@ -10,25 +15,42 @@ use crate::screen::{HEIGHT, WIDTH};
 
 use super::utils::make_init_frame;
 
+/// Default RGBA color for the background fill.
 pub const DEFAULT_BACKGROUND_COLOR: (u8, u8, u8, u8) = (98, 96, 96, 255);
+
+/// Offset used when rendering shadows relative to the sprite.
 pub const OFFSET: (i32, i32) = (10, -10);
+
+/// Opacity (alpha) value for shadows.
 pub const SHADOW_OPAQUENESS: u8 = 80;
 
-pub struct Renderable {
-    pub uid: u32,
-    pub sprite: DynamicImage,
-    pub visible_area: Rectangle,
-    pub position: Position,
-}
-
+/// Represents a rectangular area defined by top-left and bottom-right coordinates.
 pub struct Rectangle {
+    /// Coordinates of the top-left corner.
     pub top_left: (i32, i32),
+    /// Coordinates of the bottom-right corner.
     pub bot_right: (i32, i32),
 }
 
-/// A struct describing entity for:
-/// * Choosing which pixels to recolor based on info from Engine.
-/// * Forming recolored frame and sending it to Screen.
+/// Represents an entity that can be rendered.
+///
+/// Holds identification, image data (sprite), visible area on screen,
+/// and positional information for rendering.
+pub struct Renderable {
+    /// Unique object identifier.
+    pub uid: u32,
+    /// Sprite image associated with the object.
+    pub sprite: DynamicImage,
+    /// The visible rectangle area of the sprite on screen.
+    pub visible_area: Rectangle,
+    /// Position of the object in the game world.
+    pub position: Position,
+}
+
+/// Manages the main rendering process.
+///
+/// Holds the rendering resolution, background image, previously rendered frame,
+/// and the scene manager to access active scene data.
 pub struct Renderer {
     resolution: Resolution,
     background: Option<DynamicImage>,
@@ -37,6 +59,9 @@ pub struct Renderer {
 }
 
 impl Renderer {
+    /// Creates a new renderer instance with given resolution, background image, and scene manager.
+    ///
+    /// Initializes the previous frame buffer based on the background or default color.
     pub(crate) fn new(
         resolution: Resolution,
         background: Option<DynamicImage>,
@@ -52,8 +77,17 @@ impl Renderer {
         }
     }
 
-    /// Find intersection of two rectangular. Is used in render to find what part of object (if any)
-    /// should be rendered with current camera position
+    /// Finds the intersection of two rectangles.
+    ///
+    /// Used during rendering to determine what part of an object should be drawn based on
+    /// the current camera's viewport.
+    ///
+    /// # Parameters
+    /// - `fst`: First rectangle.
+    /// - `snd`: Second rectangle.
+    ///
+    /// # Returns
+    /// Optionally returns a rectangle representing the intersecting area, or None if no intersection.
     fn _find_intersection(fst: &Rectangle, snd: &Rectangle) -> Option<Rectangle> {
         let left = fst.top_left.0.max(snd.top_left.0);
         let right = fst.bot_right.0.min(snd.bot_right.0);
@@ -65,10 +99,22 @@ impl Renderer {
                 bot_right: (right, bot),
             });
         };
-
         None
     }
 
+    /// Blits (copies) a sprite onto the frame buffer considering visible area, position, camera offset, and shadow.
+    ///
+    /// Handles pixel mapping, shadow rendering, clipping outside the viewport,
+    /// and color blending for semi-transparent pixels.
+    ///
+    /// # Parameters
+    /// - `frame`: Mutable frame buffer to draw on.
+    /// - `sprite`: Sprite image to render.
+    /// - `visible_area`: Screen world rectangle describing visible part of sprite.
+    /// - `position`: Game world position of sprite.
+    /// - `camera_top`: World position of the camera top-left corner.
+    /// - `frame_size`: Dimensions of the frame buffer.
+    /// - `has_shadow`: Indicates if shadow rendering should be applied.
     fn blit_sprite(
         frame: &mut [(u8, u8, u8, u8)],
         sprite: &DynamicImage,
@@ -83,9 +129,10 @@ impl Renderer {
         // loop over world coordinates of visible area
         let (sprite_w, sprite_h) = sprite.dimensions();
 
+        // Iterate over world coordinates within visible area
         for wy in visible_area.bot_right.1..visible_area.top_left.1 {
             for wx in visible_area.top_left.0..visible_area.bot_right.0 {
-                // map world -> sprite coordinates
+                // Map world coordinates to sprite local coordinates
                 if wx < position.0 || wy > position.1 {
                     continue;
                 }
@@ -99,7 +146,7 @@ impl Renderer {
                 let px = sprite.get_pixel(sprite_x.try_into().unwrap(), sprite_y as u32);
                 let src = px.0;
 
-                // skip transparent pixels
+                // Skip fully transparent pixels
                 if src[3] == 0 {
                     continue;
                 }
@@ -127,7 +174,7 @@ impl Renderer {
                     frame[idx] = blended;
                 }
 
-                // map world -> screen coordinates
+                // Map world to screen coordinates
                 let sx_i = wx - camera_top.0;
                 let sy_i = camera_top.1 - wy;
 
@@ -141,7 +188,7 @@ impl Renderer {
                     continue;
                 }
 
-                // fully opaque => just overwrite
+                // Write pixel data to frame, considering shadow and transparency
                 let idx = (sy * frame_w as u32 + sx) as usize;
                 let mut shadowed = src;
                 if src[0] == 0 && src[1] == 0 && src[2] == 0 && src[3] != 255 {
@@ -155,12 +202,15 @@ impl Renderer {
         }
     }
 
-    /// Form new frame based on previous one and info from Engine
+    /// Core rendering function that creates a new frame based on the current scene and background.
+    ///
+    /// Initializes the frame, collects renderable objects from the active scene,
+    /// calculates their positions and visible rectangles, and blits sprites onto the frame.
     pub(crate) fn render(&mut self) {
-        // find cam rectangle
+        // Camera rectangle based on main object's position and screen size
         let main_object = &self.scene_manager.active_scene.main_object;
         let mut frame: Vec<(u8, u8, u8, u8)> = make_init_frame(self.background.clone());
-        //println!("Main object collected");
+
         let renderable = self.scene_manager.init_active_scene();
 
         let _camera_rect = Rectangle {
@@ -200,7 +250,10 @@ impl Renderer {
         }
     }
 
-    /// Emit new frame to Screen
+    /// Returns the most recently rendered frame for display.
+    ///
+    /// # Returns
+    /// Optionally returns a vector representing the RGBA pixel data of the current frame.
     pub fn emit(&mut self) -> Option<Vec<(u8, u8, u8, u8)>> {
         Some(self.prev_frame.clone())
     }
@@ -215,24 +268,29 @@ mod tests {
     use super::*;
 
     const DEFAULT_BACKGROUND: (u8, u8, u8, u8) = (
-                DEFAULT_BACKGROUND_COLOR.0,
-                DEFAULT_BACKGROUND_COLOR.1,
-                DEFAULT_BACKGROUND_COLOR.2,
-                DEFAULT_BACKGROUND_COLOR.3,
-            );
+        DEFAULT_BACKGROUND_COLOR.0,
+        DEFAULT_BACKGROUND_COLOR.1,
+        DEFAULT_BACKGROUND_COLOR.2,
+        DEFAULT_BACKGROUND_COLOR.3,
+    );
 
     fn test_init_renderer() -> Renderer {
         let resolution = Resolution::new(200, 200);
         let background = None;
-        let objs = [create_obj_with_img("image_path", 200, 200, false)];
-        let main_obj = create_obj_with_img("image", 300, 300, true);
+        let objs = [create_obj_with_img(
+            "./resources/perf_diag.png",
+            200,
+            200,
+            false,
+        )];
+        let main_obj = create_obj_with_img("./resources/perf_diag.png", 300, 300, true);
         let main_scene = init_scene(&objs, main_obj);
         let scene_manager = SceneManager::new(main_scene);
         let renderer = Renderer::new(resolution, background, scene_manager);
-        return renderer
+        return renderer;
     }
 
-    fn create_sprite_with_color(width: u32, height: u32, color: [u8;4]) -> DynamicImage {
+    fn create_sprite_with_color(width: u32, height: u32, color: [u8; 4]) -> DynamicImage {
         let mut img = RgbaImage::new(width, height);
         for y in 0..height {
             for x in 0..width {
@@ -242,23 +300,30 @@ mod tests {
         DynamicImage::ImageRgba8(img)
     }
 
-    // #[test]
-    // fn test_renderer() {
-    //     let renderer = test_init_renderer();
-    //     assert_eq!(renderer.resolution.height, 200);
-    //     assert_eq!(renderer.resolution.height, 200);
-    //     assert_eq!(renderer.background, None);
-    //     let mut vector = renderer.prev_frame;
-    //     for _ in 0..HEIGHT {
-    //     for _ in 0..WIDTH {
-    //         assert_eq!(vector.pop(), Some(DEFAULT_BACKGROUND));
-    //     }}
-    // }
+    #[test]
+    fn test_renderer() {
+        let renderer = test_init_renderer();
+        assert_eq!(renderer.resolution.height, 200);
+        assert_eq!(renderer.resolution.height, 200);
+        assert_eq!(renderer.background, None);
+        let mut vector = renderer.prev_frame;
+        for _ in 0..HEIGHT {
+            for _ in 0..WIDTH {
+                assert_eq!(vector.pop(), Some(DEFAULT_BACKGROUND));
+            }
+        }
+    }
 
     #[test]
     fn test_find_intersection_symmetric_rectangles() {
-        let fst = Rectangle{ top_left: (0, 200), bot_right: (200, 0)};
-        let snd = Rectangle{ top_left: (0, 200), bot_right: (200, 0)};
+        let fst = Rectangle {
+            top_left: (0, 200),
+            bot_right: (200, 0),
+        };
+        let snd = Rectangle {
+            top_left: (0, 200),
+            bot_right: (200, 0),
+        };
         let result = Renderer::_find_intersection(&fst, &snd);
         match result {
             None => assert!(false),
@@ -271,8 +336,14 @@ mod tests {
 
     #[test]
     fn test_find_intersection_simple_case() {
-        let fst = Rectangle{ top_left: (0, 200), bot_right: (200, 0)};
-        let snd = Rectangle{ top_left: (0, 200), bot_right: (150, 150)};
+        let fst = Rectangle {
+            top_left: (0, 200),
+            bot_right: (200, 0),
+        };
+        let snd = Rectangle {
+            top_left: (0, 200),
+            bot_right: (150, 150),
+        };
         let result = Renderer::_find_intersection(&fst, &snd);
         match result {
             None => assert!(false),
@@ -285,21 +356,29 @@ mod tests {
 
     #[test]
     fn test_find_intersection_zero_intersection() {
-        let fst = Rectangle{ top_left: (0, 200), bot_right: (200, 0)};
-        let snd = Rectangle{ top_left: (-200, 200), bot_right: (0, 0)};
+        let fst = Rectangle {
+            top_left: (0, 200),
+            bot_right: (200, 0),
+        };
+        let snd = Rectangle {
+            top_left: (-200, 200),
+            bot_right: (0, 0),
+        };
         let result = Renderer::_find_intersection(&fst, &snd);
         match result {
             None => assert!(true),
-            Some(_) => assert!(false)
+            Some(_) => assert!(false),
         }
     }
 
     #[test]
     fn test_fully_opaque_no_shadow() {
-
-        let mut frame = vec![(0u8, 0u8, 0u8, 0u8); 10*10];
+        let mut frame = vec![(0u8, 0u8, 0u8, 0u8); 10 * 10];
         let sprite = create_sprite_with_color(3, 3, [255, 0, 0, 255]); // red opaque
-        let visible_area = Rectangle { top_left: (0, 5), bot_right: (5, 0) };
+        let visible_area = Rectangle {
+            top_left: (0, 5),
+            bot_right: (5, 0),
+        };
         Renderer::blit_sprite(
             &mut frame,
             &sprite,
@@ -313,18 +392,20 @@ mod tests {
         assert_eq!(frame[idx].0, 255);
         assert_eq!(frame[idx].3, 255);
     }
-    
 
     #[test]
     fn test_transparent_pixels_skipped() {
-        let mut frame = vec![(100, 100, 100, 100); 10*10];
+        let mut frame = vec![(100, 100, 100, 100); 10 * 10];
         let mut sprite_img = RgbaImage::new(2, 2);
-        sprite_img.put_pixel(0, 0, Rgba([0, 0, 0, 0]));       // transparent
-        sprite_img.put_pixel(1, 0, Rgba([50, 50, 50, 255]));  // opaque
-        sprite_img.put_pixel(0, 1, Rgba([10, 10, 10, 0]));    // transparent
-        sprite_img.put_pixel(1, 1, Rgba([20, 20, 20, 255]));  // opaque
+        sprite_img.put_pixel(0, 0, Rgba([0, 0, 0, 0])); // transparent
+        sprite_img.put_pixel(1, 0, Rgba([50, 50, 50, 255])); // opaque
+        sprite_img.put_pixel(0, 1, Rgba([10, 10, 10, 0])); // transparent
+        sprite_img.put_pixel(1, 1, Rgba([20, 20, 20, 255])); // opaque
         let sprite = DynamicImage::ImageRgba8(sprite_img);
-        let visible_area = Rectangle { top_left: (1, 2), bot_right: (3, 0) };
+        let visible_area = Rectangle {
+            top_left: (1, 2),
+            bot_right: (3, 0),
+        };
         Renderer::blit_sprite(
             &mut frame,
             &sprite,
@@ -340,11 +421,14 @@ mod tests {
 
     #[test]
     fn test_shadow_pixels_with_partial_alpha_subtract() {
-        let mut frame = vec![(100, 100, 100, 255); 10*10];
+        let mut frame = vec![(100, 100, 100, 255); 10 * 10];
         let mut sprite_img = RgbaImage::new(1, 1);
         sprite_img.put_pixel(0, 0, Rgba([0, 0, 0, 10])); // partially transparent black pixel
         let sprite = DynamicImage::ImageRgba8(sprite_img);
-        let visible_area = Rectangle { top_left: (0, 1), bot_right: (1, 0) };
+        let visible_area = Rectangle {
+            top_left: (0, 1),
+            bot_right: (1, 0),
+        };
         Renderer::blit_sprite(
             &mut frame,
             &sprite,
@@ -363,9 +447,12 @@ mod tests {
 
     #[test]
     fn test_pixels_outside_visible_area_not_drawn() {
-        let mut frame = vec![(50, 50, 50, 255); 10*10];
+        let mut frame = vec![(50, 50, 50, 255); 10 * 10];
         let sprite = create_sprite_with_color(2, 2, [255, 255, 255, 255]);
-        let visible_area = Rectangle { top_left: (0, 2), bot_right: (2, 1) };
+        let visible_area = Rectangle {
+            top_left: (0, 2),
+            bot_right: (2, 1),
+        };
         Renderer::blit_sprite(
             &mut frame,
             &sprite,
@@ -381,16 +468,19 @@ mod tests {
         }
     }
 
-    // #[test]
-    // fn test_emit() {
-    //     let mut renderer = test_init_renderer();
-    //     let result = renderer.emit();
-    //     match result {
-    //         None => assert!(false),
-    //         Some(mut res) => for _ in 0..HEIGHT {
-    //     for _ in 0..WIDTH {
-    //         assert_eq!(res.pop(), Some(DEFAULT_BACKGROUND));
-    //     }}
-    //     }
-    // }
+    #[test]
+    fn test_emit() {
+        let mut renderer = test_init_renderer();
+        let result = renderer.emit();
+        match result {
+            None => assert!(false),
+            Some(mut res) => {
+                for _ in 0..HEIGHT {
+                    for _ in 0..WIDTH {
+                        assert_eq!(res.pop(), Some(DEFAULT_BACKGROUND));
+                    }
+                }
+            }
+        }
+    }
 }

@@ -22,7 +22,22 @@ Run the project:
 ## Docs
 Project documentation is availible [here](https://p1onerka.github.io/rusty_ache/rusty_ache/index.html).
 
-## Performance
+## Supported Platforms
+
+This game engine project supports the following platforms:
+
+- **Linux:** Officially tested on Ubuntu 24.04 and Fedora 42.
+- **Windows:** Compatible with Windows 10 and 11.
+- **macOS:** Tested on macOS.
+- **kvadraOS:** Tested on kvadra Operating System.
+
+- **Architectures:** Primarily x86_64, ARM64 support.
+
+## System Requirements
+- Rust stable toolchain (≥ 1.70.0)
+- Graphics hardware supporting OpenGL 3.3+ or Vulkan 1.1+
+- C compiler (`gcc`/`clang`) for building native dependencies
+- ≥ 8GB RAM recommended
 
 Below is a graph showing the dependence of FPS on the number of simultaneously rendered objects, created under the following conditions:
 

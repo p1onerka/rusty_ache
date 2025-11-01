@@ -1,5 +1,13 @@
-use super::*;
+//! Represents a velocity component attached to a game object.
+//!
+//! The `Velocity` struct holds positional delta values typically used
+//! to update an entity's movement or position each frame.
+//! It implements the `Component` trait to integrate with the component system.
 
+use super::*;
+use std::any::Any;
+
+/// Component storing velocity in x and y directions.
 pub struct Velocity {
     _x: usize,
     _y: usize,
@@ -7,6 +15,10 @@ pub struct Velocity {
 }
 
 impl Velocity {
+    /// Constructs a new `Velocity` component with zero initial velocity.
+    ///
+    /// # Returns
+    /// A `Velocity` instance with both `_x` and `_y` set to zero.
     pub fn _new() -> Self {
         Velocity {
             _x: 0,
@@ -14,6 +26,12 @@ impl Velocity {
             _component_type: ComponentType::Velocity,
         }
     }
+
+    /// Updates the velocity components to new values.
+    ///
+    /// # Parameters
+    /// - `x`: New horizontal velocity.
+    /// - `y`: New vertical velocity.
     pub fn _update(&mut self, x: usize, y: usize) {
         self._x = x;
         self._y = y;
@@ -21,9 +39,12 @@ impl Velocity {
 }
 
 impl Component for Velocity {
+    /// Returns a reference to this component as a dynamic Any for downcasting.
     fn as_any(&self) -> &dyn Any {
         self
     }
+
+    /// Returns the component type identifier as `ComponentType::Velocity`.
     fn get_component_type(&self) -> ComponentType {
         ComponentType::Velocity
     }

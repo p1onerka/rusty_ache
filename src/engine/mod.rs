@@ -1,3 +1,12 @@
+//! Main engine module defining engine traits and implementation.
+//!
+//! Provides abstractions for engine lifecycle and rendering, as well as
+//! a concrete `GameEngine` implementation which manages rendering, scene management,
+//! input handling, and the event loop.
+//!
+//! This module integrates configurations, scenes, rendering, and input processing
+//! to provide the core game engine loop and functionality.
+
 pub mod config;
 pub mod input;
 pub mod scene;
@@ -8,8 +17,7 @@ use crate::engine::config::Config;
 use crate::engine::scene::Scene;
 use crate::engine::scene::game_object::Object;
 use crate::engine::scene_manager::SceneManager;
-use crate::render::renderer::DEFAULT_BACKGROUND_COLOR;
-use crate::render::renderer::Renderer;
+use crate::render::renderer::{DEFAULT_BACKGROUND_COLOR, Renderer};
 use crate::screen::{App, HEIGHT, WIDTH};
 //use image::ImageReader;
 use std::io::Error;
@@ -20,35 +28,52 @@ use std::time::Duration;
 use winit::event_loop::{ControlFlow, EventLoop};
 use winit::window::Window;
 
-/// A trait for describing entity for main engine logic
+/// Trait defining essential engine behavior.
+///
+/// Abstracts an engine capable of managing an active scene, performing rendering,
+/// running its main loop, and supporting dynamic configuration.
 pub trait Engine {
+    /// Sets the currently active scene within the engine.
     fn set_active_scene(&mut self, new_scene: Scene) -> Result<(), Error>;
+
+    /// Performs a rendering pass.
     fn render(&mut self) -> Result<(), Error>;
 
+    /// Starts and runs the engine main loop.
     fn run(&mut self) -> Result<(), Error>;
 
+    /// Creates a new engine instance from configuration and initial scene.
     fn new(config: Box<dyn Config + Send>, scene: Scene) -> Self
     where
         Self: Sized;
 }
 
+/// Concrete implementation of the game engine.
+///
+/// Holds a thread-safe renderer reference, manages scenes and input handling,
+/// runs the main event loop and coordinates rendering.
 pub struct GameEngine {
     //config: Box<dyn Config + Send>,
     render: Arc<RwLock<Renderer>>,
 }
 
 impl Engine for GameEngine {
+    /// Sets the active scene inside the renderer's scene manager.
     fn set_active_scene(&mut self, new_scene: Scene) -> Result<(), Error> {
         self.render.write().unwrap().scene_manager = SceneManager::new(new_scene);
 
         Ok(())
     }
 
+    /// Delegates rendering to the internal Renderer instance.
     fn render(&mut self) -> Result<(), Error> {
         self.render.write().unwrap().render();
         Ok(())
     }
 
+    /// Creates a new GameEngine using provided config and scene.
+    ///
+    /// Initializes the Renderer with the resolution and the scene manager.
     fn new(config: Box<dyn Config + 'static + Send>, scene: Scene) -> Self
     where
         Self: Sized,
@@ -68,6 +93,12 @@ impl Engine for GameEngine {
         }
     }
 
+    /// Runs the game engine event loop.
+    ///
+    /// Sets up shared state for pixel data, window, and input keys.
+    /// Spawns a producer thread that updates the main object's position based on key input
+    /// and triggers rendering updates.
+    /// Runs the `winit` event loop with the associated GUI application.
     fn run(&mut self) -> Result<(), Error> {
         let initial_resolution = Resolution {
             width: WIDTH,
@@ -88,7 +119,7 @@ impl Engine for GameEngine {
         //let key_pressed_clone = app.key_pressed.clone();
         let keys_pressed_clone = app.keys_pressed.clone();
         let renderer = self.render.clone();
-        // Producer thread
+
         thread::spawn(move || {
             let window_arc: Arc<Window> = loop {
                 if let Some(arc) = shared_window_clone.read().unwrap().clone() {
@@ -114,7 +145,7 @@ impl Engine for GameEngine {
                     - (keys_pressed_clone.s.load(Ordering::Relaxed) as i32);
 
                 let vector_move = (dx, dy);
-                //println!("{:?}", vector_move);
+
                 renderer
                     .write()
                     .unwrap()
@@ -122,7 +153,7 @@ impl Engine for GameEngine {
                     .active_scene
                     .main_object
                     .add_position((vector_move.0, vector_move.1));
-                //renderer.clear_poison();
+
                 renderer.write().unwrap().render();
                 match renderer.write().unwrap().emit() {
                     Some(colors) => {
@@ -137,7 +168,6 @@ impl Engine for GameEngine {
                         window_arc.request_redraw();
                     }
                     None => {
-                        //println!("Emition failed");
                         continue;
                     }
                 }
@@ -146,7 +176,6 @@ impl Engine for GameEngine {
 
         let event_loop = EventLoop::new().unwrap();
         event_loop.set_control_flow(ControlFlow::Wait);
-
         let _ = event_loop.run_app(&mut app);
         Ok(())
     }
@@ -156,12 +185,15 @@ impl Engine for GameEngine {
 mod tests {
     use crate::{
         Resolution,
-        engine::{config::EngineConfig, scene::game_object::{Position, components::Component}},
+        engine::{config::EngineConfig, scene::game_object::Position},
     };
 
     use super::*;
 
-    fn create_config_with_resolution(width: u32, height: u32) -> Box<dyn config::Config + Send + 'static> {
+    fn create_config_with_resolution(
+        width: u32,
+        height: u32,
+    ) -> Box<dyn config::Config + Send + 'static> {
         Box::new(EngineConfig::new(Resolution::new(width, height)))
     }
 

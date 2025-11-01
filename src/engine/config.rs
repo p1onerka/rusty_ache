@@ -1,27 +1,58 @@
-/// use crate::engine::Scene;
-/// A trait describing entity for Engine configuring
+//! Defines configuration traits and structs for the game engine.
+//!
+//! This module provides a `Config` trait to standardize engine configuration behavior,
+//! focusing on resolution settings. The `EngineConfig` struct implements this trait,
+//! encapsulating screen resolution management.
+
 use crate::Resolution;
 
+/// Trait defining configuration interface for engine settings.
+///
+/// Allows setting and retrieving the screen resolution.
+/// The `new` method constructs a configuration instance with an initial resolution.
 pub trait Config {
+    /// Sets the resolution width and height.
+    ///
+    /// # Parameters
+    /// - `width`: Screen width in pixels.
+    /// - `height`: Screen height in pixels.
     fn set_resolution(&mut self, width: u32, height: u32);
 
+    /// Gets the current resolution.
+    ///
+    /// # Returns
+    /// A `Resolution` struct representing the current screen dimensions.
     fn get_resolution(&self) -> Resolution;
 
+    /// Creates a new configuration instance with the given resolution.
+    ///
+    /// # Parameters
+    /// - `resolution`: Initial resolution settings.
+    ///
+    /// # Returns
+    /// A new implementing instance of the Config trait.
     fn new(resolution: Resolution) -> Self
     where
         Self: Sized;
 }
 
+/// Concrete implementation of the engine configuration.
+///
+/// Stores screen resolution and provides access using the `Config` trait.
 #[derive()]
 pub struct EngineConfig {
+    /// The current resolution settings.
     resolution: Resolution,
 }
 
 impl Config for EngineConfig {
+    /// Sets the resolution width and height.
     fn set_resolution(&mut self, width: u32, height: u32) {
         self.resolution.width = width;
         self.resolution.height = height;
     }
+
+    /// Returns a copy of the current resolution.
     fn get_resolution(&self) -> Resolution {
         Resolution {
             width: self.resolution.width,
@@ -29,6 +60,7 @@ impl Config for EngineConfig {
         }
     }
 
+    /// Creates a new `EngineConfig` with the specified resolution.
     fn new(resolution: Resolution) -> Self {
         EngineConfig { resolution }
     }
