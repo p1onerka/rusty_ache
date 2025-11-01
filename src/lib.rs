@@ -1,16 +1,32 @@
+//! Root module for the game engine project.
+//!
+//! This module exposes submodules for the core engine logic, user interface,
+//! rendering subsystem, and screen management.
 pub mod engine;
 pub mod interface;
 pub mod render;
 pub mod screen;
 
-/// Struct representing screen resolution.
+/// Represents screen resolution.
+///
+/// Holds the width and height in pixels, encapsulating display dimensions.
 #[derive(Copy, Clone)]
 pub struct Resolution {
+    /// Width of the screen or rendering area in pixels.
     width: u32,
+    /// Height of the screen or rendering area in pixels.
     height: u32,
 }
 
 impl Resolution {
+    /// Creates a new `Resolution` instance with specified width and height.
+    ///
+    /// # Parameters
+    /// - `width`: Width in pixels.
+    /// - `height`: Height in pixels.
+    ///
+    /// # Returns
+    /// A new `Resolution` struct with given dimensions.
     pub fn new(width: u32, height: u32) -> Self {
         Self { width, height }
     }

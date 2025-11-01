@@ -1,22 +1,48 @@
+//! Manages different scenes within the game engine, allowing for scene switching and initialization.
+//!
+//! The `SceneManager` struct holds the currently active scene and provides methods to access
+//! and initialize its renderable components for rendering purposes.
+
 use crate::engine::scene::Scene;
 use crate::engine::scene::game_object::GameObject;
 use image::DynamicImage;
 
+/// Manages active scene and provides scene-related operations.
 pub struct SceneManager {
+    /// The scene currently active in the engine.
     pub(crate) active_scene: Scene,
 }
 
 impl SceneManager {
+    /// Creates a new `SceneManager` with the specified main scene.
+    ///
+    /// # Parameters
+    /// - `main_scene`: The initial scene to set as active.
+    ///
+    /// # Returns
+    /// A new `SceneManager` instance with the provided scene.
     pub fn new(main_scene: Scene) -> Self {
         SceneManager {
             active_scene: main_scene,
         }
     }
 
+    /// Returns a reference to the currently active scene.
+    ///
+    /// # Returns
+    /// A reference to the active `Scene`.
     pub fn active_scene(&self) -> &Scene {
         &self.active_scene
     }
 
+    /// Initializes and retrieves all renderable objects from the active scene.
+    ///
+    /// This method calls the `init()` method of the current scene, which prepares
+    /// sprite components sorted by their z-position for rendering.
+    ///
+    /// # Returns
+    /// A vector of tuples, each containing references to game objects,
+    /// their sprite images, positional offsets, and shadow flags.
     pub fn init_active_scene(&self) -> Vec<(&GameObject, &DynamicImage, (i32, i32), bool)> {
         self.active_scene.init()
     }

@@ -1,3 +1,12 @@
+//! Defines the main application window, input handling, and rendering update loop using winit and pixels crates.
+//!
+//! This module implements the `App` struct, which manages the window, screen buffer, pixel data,
+//! and keyboard input state. It integrates with the winit event loop to handle window events,
+//! update pixel frames, and process user keyboard input.
+//!
+//! The example function demonstrates initializing shared pixel data and window, spawning a producer thread
+//! to modify pixel data dynamically, and running the event loop to render changes to the screen.
+
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, RwLock};
 use std::thread;
@@ -13,16 +22,22 @@ use winit::event_loop::{ActiveEventLoop, ControlFlow, EventLoop};
 use winit::keyboard::{KeyCode, PhysicalKey};
 use winit::window::{Window, WindowAttributes, WindowId};
 
+/// Screen dimensions constants.
 pub const WIDTH: u32 = 300;
 pub const HEIGHT: u32 = 300;
 
-/// Struct representing Screen, on which a game will be drawn
+/// Represents the screen on which game frames are drawn.
+///
+/// Wraps the `Pixels` buffer and provides methods for pixel frame updates.
 pub struct Screen<'a> {
     pixels: Pixels<'a>,
 }
 
-/// Implementation of Screen for main GUI application
 impl Screen<'_> {
+    /// Creates a new `Screen` attached to the specified window and resolution.
+    ///
+    /// # Errors
+    /// Returns a `pixels::Error` if pixel buffer initialization fails.
     pub fn new(window: Arc<Window>, resolution: Resolution) -> Result<Self, pixels::Error> {
         let surface_texture =
             SurfaceTexture::new(resolution.width, resolution.height, window.clone());
@@ -30,7 +45,10 @@ impl Screen<'_> {
         Ok(Self { pixels })
     }
 
-    /// Draw new RGB frame on Screen
+    /// Updates the pixel frame with new RGBA color data and renders it.
+    ///
+    /// # Parameters
+    /// - `pixel_colors`: Slice of RGBA tuples representing new frame pixel data.
     pub fn update(&mut self, pixel_colors: &[(u8, u8, u8, u8)]) {
         let cur_frame = self.pixels.frame_mut();
         for (i, &(r, g, b, a)) in pixel_colors.iter().enumerate() {
@@ -44,8 +62,10 @@ impl Screen<'_> {
     }
 }
 
+/// Type alias for pixel color data vectors.
 type PixelData = Vec<(u8, u8, u8, u8)>;
 
+/// Holds the pressed state of movement keys (WASD) via atomic booleans for thread-safe access.
 pub struct Keys {
     pub w: AtomicBool,
     pub a: AtomicBool,
@@ -53,24 +73,28 @@ pub struct Keys {
     pub d: AtomicBool,
 }
 
-/// GUI for game
+/// Main GUI application struct.
+///
+/// Holds references to the window, screen, pixel buffer, and keyboard input state.
+/// Tracks frame count and timing for optional FPS measurements.
 pub struct App {
-    /// Main window object
+    /// Reference to the main window, inside a read-write lock.
     window: Arc<RwLock<Option<Arc<Window>>>>,
-    /// Screen for representing the game inside the window
+    /// The `Screen` object rendering pixel frames.
     screen: Option<Screen<'static>>,
-    /// Pixel colors provided by Renderer
+    /// Shared pixel data provided by the renderer.
     pixel_data: Arc<RwLock<PixelData>>,
-    /// currently pressed key for Engine
-    //pub(crate) key_pressed: Arc<RwLock<Option<KeyCode>>>,
+    /// Atomic flags indicating pressed state for WASD keys.
     pub(crate) keys_pressed: Arc<Keys>,
 
+    /// Frame count for FPS calculation.
     frame_count: u32,
+    /// Timestamp of last FPS measurement.
     last_fps_report_time: Instant,
 }
 
-/// Basic App implementation
 impl App {
+    /// Constructs a new App with shared pixel data and window references.
     pub fn new(
         pixel_data: Arc<RwLock<PixelData>>,
         window: Arc<RwLock<Option<Arc<Window>>>>,
@@ -86,15 +110,19 @@ impl App {
                 s: AtomicBool::new(false),
                 d: AtomicBool::new(false),
             }),
-
             frame_count: 0,
             last_fps_report_time: Instant::now(),
         }
     }
+
+    /// Placeholder run method; main loop handled by `winit` event loop.
     pub fn run(&mut self) {}
 }
 
 impl ApplicationHandler for App {
+    /// Called when the application is resumed or started.
+    ///
+    /// Creates the window and initializes the `Screen`.
     fn resumed(&mut self, event_loop: &ActiveEventLoop) {
         let window_size = LogicalSize::new(WIDTH / 2, HEIGHT / 2);
         let window_attributes = WindowAttributes::default()
@@ -122,9 +150,11 @@ impl ApplicationHandler for App {
         }
     }
 
-    /// Treats window events correspondingly:
-    /// 1. CloseRequest -- stop the application
-    /// 2. RedrawRequest -- take new data from producer (eg. Renderer), update the screen. Also counts FPS (probably delete later)
+    /// Handles window events such as close requests, redraw requests, and keyboard input.
+    ///
+    /// - CloseRequested: exits event loop.
+    /// - RedrawRequested: updates the screen with new pixels and optionally calculates FPS.
+    /// - KeyboardInput: updates atomic key states for WASD keys.
     fn window_event(&mut self, event_loop: &ActiveEventLoop, _: WindowId, event: WindowEvent) {
         let screen = match self.screen.as_mut() {
             Some(s) => s,
@@ -155,7 +185,6 @@ impl ApplicationHandler for App {
                     self.last_fps_report_time = Instant::now();
                 }
             }
-
             WindowEvent::KeyboardInput {
                 event:
                     KeyEvent {
@@ -180,14 +209,10 @@ impl ApplicationHandler for App {
     }
 }
 
-/// To run example, replace /bin/main.rs with:
-/// rust
-///use rusty_ache::screen::utils::example;
+/// Example function demonstrating app initialization and running.
 ///
-///fn main() {
-///    example();
-///}
-///
+/// Sets up shared pixel buffers and windows, spawns a producer thread that
+/// dynamically updates pixel colors in a loop, and runs the event loop.
 pub fn example() {
     let initial_resolution = Resolution {
         width: WIDTH,
@@ -241,4 +266,174 @@ pub fn example() {
     event_loop.set_control_flow(ControlFlow::Wait);
     let mut app = App::new(shared_pixel_data, shared_window);
     let _ = event_loop.run_app(&mut app);
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::sync::atomic::Ordering;
+    use std::sync::{Arc, RwLock};
+    use std::thread;
+
+    #[test]
+    fn test_keys_new_all_false() {
+        let keys = Keys {
+            w: AtomicBool::new(false),
+            a: AtomicBool::new(false),
+            s: AtomicBool::new(false),
+            d: AtomicBool::new(false),
+        };
+
+        assert_eq!(keys.w.load(Ordering::Relaxed), false);
+        assert_eq!(keys.a.load(Ordering::Relaxed), false);
+        assert_eq!(keys.s.load(Ordering::Relaxed), false);
+        assert_eq!(keys.d.load(Ordering::Relaxed), false);
+    }
+
+    #[test]
+    fn test_keys_store_and_load() {
+        let keys = Keys {
+            w: AtomicBool::new(false),
+            a: AtomicBool::new(false),
+            s: AtomicBool::new(false),
+            d: AtomicBool::new(false),
+        };
+
+        keys.w.store(true, Ordering::Relaxed);
+        keys.a.store(true, Ordering::SeqCst);
+
+        assert_eq!(keys.w.load(Ordering::Relaxed), true);
+        assert_eq!(keys.a.load(Ordering::SeqCst), true);
+        assert_eq!(keys.s.load(Ordering::Relaxed), false);
+        assert_eq!(keys.d.load(Ordering::Relaxed), false);
+    }
+
+    #[test]
+    fn test_keys_toggle_operations() {
+        let keys = Keys {
+            w: AtomicBool::new(false),
+            a: AtomicBool::new(false),
+            s: AtomicBool::new(false),
+            d: AtomicBool::new(false),
+        };
+
+        keys.w.store(true, Ordering::Relaxed);
+        assert_eq!(keys.w.load(Ordering::Relaxed), true);
+        keys.w.store(false, Ordering::Relaxed);
+        assert_eq!(keys.w.load(Ordering::Relaxed), false);
+    }
+
+    #[test]
+    fn test_keys_all_true() {
+        let keys = Keys {
+            w: AtomicBool::new(true),
+            a: AtomicBool::new(true),
+            s: AtomicBool::new(true),
+            d: AtomicBool::new(true),
+        };
+
+        assert_eq!(keys.w.load(Ordering::Relaxed), true);
+        assert_eq!(keys.a.load(Ordering::Relaxed), true);
+        assert_eq!(keys.s.load(Ordering::Relaxed), true);
+        assert_eq!(keys.d.load(Ordering::Relaxed), true);
+    }
+
+    #[test]
+    fn test_keys_compare_and_swap() {
+        let keys = Keys {
+            w: AtomicBool::new(false),
+            a: AtomicBool::new(false),
+            s: AtomicBool::new(false),
+            d: AtomicBool::new(false),
+        };
+
+        let old = keys.w.swap(true, Ordering::Relaxed);
+        assert_eq!(old, false);
+        assert_eq!(keys.w.load(Ordering::Relaxed), true);
+    }
+
+    #[test]
+    fn test_width_constant() {
+        assert_eq!(WIDTH, 300);
+        assert!(WIDTH > 0);
+    }
+
+    #[test]
+    fn test_height_constant() {
+        assert_eq!(HEIGHT, 300);
+        assert!(HEIGHT > 0);
+    }
+
+    #[test]
+    fn test_app_new_initialization() {
+        let pixel_data = Arc::new(RwLock::new(vec![(0, 0, 0, 0); 100]));
+        let window = Arc::new(RwLock::new(None));
+
+        let app = App::new(pixel_data.clone(), window.clone());
+
+        assert_eq!(app.keys_pressed.w.load(Ordering::Relaxed), false);
+        assert_eq!(app.keys_pressed.a.load(Ordering::Relaxed), false);
+        assert_eq!(app.keys_pressed.s.load(Ordering::Relaxed), false);
+        assert_eq!(app.keys_pressed.d.load(Ordering::Relaxed), false);
+
+        assert_eq!(app.frame_count, 0);
+    }
+
+    #[test]
+    fn test_app_run_method() {
+        let pixel_data = Arc::new(RwLock::new(vec![(0, 0, 0, 0); 100]));
+        let window = Arc::new(RwLock::new(None));
+
+        let mut app = App::new(pixel_data, window);
+        app.run();
+    }
+
+    #[test]
+    fn test_app_keys_simulation() {
+        let pixel_data = Arc::new(RwLock::new(vec![(0, 0, 0, 0); 100]));
+        let window = Arc::new(RwLock::new(None));
+
+        let app = App::new(pixel_data, window);
+
+        app.keys_pressed.w.store(true, Ordering::Relaxed);
+        app.keys_pressed.d.store(true, Ordering::Relaxed);
+
+        assert_eq!(app.keys_pressed.w.load(Ordering::Relaxed), true);
+        assert_eq!(app.keys_pressed.a.load(Ordering::Relaxed), false);
+        assert_eq!(app.keys_pressed.s.load(Ordering::Relaxed), false);
+        assert_eq!(app.keys_pressed.d.load(Ordering::Relaxed), true);
+
+        app.keys_pressed.w.store(false, Ordering::Relaxed);
+        app.keys_pressed.d.store(false, Ordering::Relaxed);
+
+        assert_eq!(app.keys_pressed.w.load(Ordering::Relaxed), false);
+        assert_eq!(app.keys_pressed.d.load(Ordering::Relaxed), false);
+    }
+
+    #[test]
+    fn test_app_frame_counting_simulation() {
+        let pixel_data = Arc::new(RwLock::new(vec![(0, 0, 0, 0); 100]));
+        let window = Arc::new(RwLock::new(None));
+
+        let mut app = App::new(pixel_data, window);
+
+        for _ in 0..10 {
+            app.frame_count += 1;
+        }
+
+        assert_eq!(app.frame_count, 10);
+    }
+
+    #[test]
+    fn test_empty_pixel_data() {
+        let pixel_data: PixelData = vec![];
+        assert_eq!(pixel_data.len(), 0);
+    }
+
+    #[test]
+    fn test_single_pixel_data() {
+        let pixel_data: PixelData = vec![(1, 2, 3, 4)];
+        assert_eq!(pixel_data.len(), 1);
+        assert_eq!(pixel_data, vec![(1, 2, 3, 4)]);
+    }
 }

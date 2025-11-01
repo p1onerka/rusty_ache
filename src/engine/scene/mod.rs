@@ -1,3 +1,12 @@
+//! Represents a game scene containing multiple game objects and managing rendering order.
+//!
+//! The `Scene` struct manages a collection of game objects via a `GameObjectManager`
+//! and holds a reference to the main game object. It allows initializing a list
+//! of renderable entities sorted by z-position for rendering purposes.
+//!
+//! This module abstracts the coordination of game objects and prepares sprite data
+//! for the rendering pipeline.
+
 use crate::engine::scene::game_object::Object;
 use crate::engine::scene::game_object::components::{Component, ComponentType};
 use crate::engine::scene::game_object::{GameObject, Position};
@@ -8,12 +17,24 @@ pub mod game_object;
 
 mod object_manager;
 
+/// Represents the game scene containing game objects and main entity.
 pub struct Scene {
+    /// Manager responsible for storing and controlling multiple game objects.
     manager: GameObjectManager,
+    /// The main game object within this scene.
     pub main_object: GameObject,
 }
 
 impl Scene {
+    /// Creates a new `Scene` instance with provided game objects, main object's components, and position.
+    ///
+    /// # Parameters
+    /// - `objects`: Vector of existing game objects to manage in this scene.
+    /// - `main_components`: Components of the main game object.
+    /// - `main_position`: Position of the main game object.
+    ///
+    /// # Returns
+    /// A new scene instance managing game objects and main entity.
     pub fn new(
         objects: Vec<GameObject>,
         main_components: Vec<Box<dyn Component + Send + Sync>>,
@@ -29,6 +50,11 @@ impl Scene {
         }
     }
 
+    /// Initializes and collects all renderable sprite objects in the scene.
+    ///
+    /// Returns a vector of tuples containing references to game objects and their
+    /// sprite images, positional offsets, and shadow flags. The returned vector
+    /// is sorted by the `z` value of the game object's position to maintain correct rendering order.
     pub fn init(&self) -> Vec<(&GameObject, &DynamicImage, (i32, i32), bool)> {
         let mut renderable_objects: Vec<(&GameObject, &DynamicImage, (i32, i32), bool)> = vec![];
         for obj in self.manager.game_objects.values() {
@@ -60,17 +86,6 @@ impl Scene {
 
         for component in self.main_object.components.iter() {
             if component.get_component_type() == ComponentType::Sprite {
-                /*if let Some(img) = component.get_shadow_unchecked() {
-                    renderable_objects.push((
-                        &self.main_object,
-                        &img.0,
-                        (
-                            component.get_sprite_offset_unchecked().unwrap_or((0, 0)).0 + img.1.0,
-                            component.get_sprite_offset_unchecked().unwrap_or((0, 0)).1 + img.1.1,
-                        ),
-                    ));
-                }*/
-
                 if let Some(sprite_img) = component.get_sprite_unchecked().as_ref() {
                     renderable_objects.push((
                         &self.main_object,

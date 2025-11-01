@@ -1,15 +1,37 @@
+//! A factory responsible for creating and managing unique game objects within limits.
+//!
+//! `GameObjectFactory` maintains a pool of unique IDs to keep track of created objects,
+//! enforcing a maximum allowed count and reusing IDs of deleted objects.
+//!
+//! This struct is used to reliably create new `GameObject` instances while managing
+//! their identity uniqueness and allocation state.
+
 use crate::engine::scene::game_object::Position;
 use crate::engine::scene::game_object::components::Component;
 use crate::engine::scene::game_object::{GameObject, Object};
 use std::collections::{HashMap, HashSet};
 
+/// Factory struct for creating game objects with unique IDs.
+///
+/// Tracks allocated objects count and a set of freed unique identifiers (`uids`)
+/// allowing reuse of IDs to prevent overflow and manage resources efficiently.
 struct GameObjectFactory {
+    /// Set of reusable unique IDs from deleted or freed objects.
     uids: HashSet<usize>,
+    /// Maximum number of game objects that can be created.
     max_objects: usize,
+    /// Count of currently allocated objects.
     allocated_objects: usize,
 }
 
 impl GameObjectFactory {
+    /// Creates a new `GameObjectFactory` with a maximum capacity.
+    ///
+    /// # Parameters
+    /// - `max_objects`: Maximum number of objects allowed.
+    ///
+    /// # Returns
+    /// A new factory with no allocated objects and an empty UID pool.
     pub fn new(max_objects: usize) -> Self {
         GameObjectFactory {
             uids: HashSet::new(),
@@ -18,6 +40,17 @@ impl GameObjectFactory {
         }
     }
 
+    /// Creates a new game object with provided components and position.
+    ///
+    /// If there are reusable UIDs available, assigns one; otherwise, increments allocated count.
+    /// Panics if the maximum object limit has been reached without free UIDs.
+    ///
+    /// # Parameters
+    /// - `components`: Components composing the new game object.
+    /// - `position`: Initial position of the game object in the world.
+    ///
+    /// # Returns
+    /// A tuple containing the assigned unique ID and the newly created `GameObject`.
     pub fn create_object(
         &mut self,
         components: Vec<Box<dyn Component + Send + Sync>>,
