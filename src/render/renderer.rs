@@ -222,7 +222,7 @@ impl Renderer {
         };
 
         let _uids_by_z = HashMap::<u32, usize>::new();
-        for (obj, img, offset, has_shadow) in renderable {
+        for (_, obj, img, offset, has_shadow) in renderable {
             let pos = Position {
                 x: obj.position.x + offset.0,
                 y: obj.position.y + offset.1,

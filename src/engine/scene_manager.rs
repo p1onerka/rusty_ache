@@ -43,7 +43,7 @@ impl SceneManager {
     /// # Returns
     /// A vector of tuples, each containing references to game objects,
     /// their sprite images, positional offsets, and shadow flags.
-    pub fn init_active_scene(&self) -> Vec<(&GameObject, &DynamicImage, (i32, i32), bool)> {
+    pub fn init_active_scene(&self) -> Vec<(usize, &GameObject, &DynamicImage, (i32, i32), bool)> {
         self.active_scene.init()
     }
 }
