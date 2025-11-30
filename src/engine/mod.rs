@@ -11,12 +11,14 @@ pub mod config;
 pub mod input;
 pub mod scene;
 pub mod scene_manager;
+pub mod scripts;
 
 use crate::Resolution;
 use crate::engine::config::Config;
 use crate::engine::scene::Scene;
 use crate::engine::scene::game_object::Object;
 use crate::engine::scene_manager::SceneManager;
+use crate::engine::scripts::main_obj_script;
 use crate::render::renderer::{DEFAULT_BACKGROUND_COLOR, Renderer};
 use crate::screen::{App, HEIGHT, WIDTH};
 //use image::ImageReader;
@@ -139,12 +141,13 @@ impl Engine for GameEngine {
                     Some(KeyCode::KeyD) => (1, 0),
                     _ => (0, 0),
                 };*/
-                let dx = (keys_pressed_clone.d.load(Ordering::Relaxed) as i32)
+                let dx_keys = (keys_pressed_clone.d.load(Ordering::Relaxed) as i32)
                     - (keys_pressed_clone.a.load(Ordering::Relaxed) as i32);
-                let dy = (keys_pressed_clone.w.load(Ordering::Relaxed) as i32)
+                let dy_keys = (keys_pressed_clone.w.load(Ordering::Relaxed) as i32)
                     - (keys_pressed_clone.s.load(Ordering::Relaxed) as i32);
 
-                let vector_move = (dx, dy);
+                let (dx_script, dy_script) = main_obj_script();
+                let vector_move = (dx_keys + dx_script, dy_keys + dy_script);
 
                 renderer
                     .write()
@@ -155,6 +158,7 @@ impl Engine for GameEngine {
                     .add_position((vector_move.0, vector_move.1));
 
                 renderer.write().unwrap().render();
+
                 match renderer.write().unwrap().emit() {
                     Some(colors) => {
                         let mut pixels = shared_pixel_data_clone
