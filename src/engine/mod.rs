@@ -55,6 +55,7 @@ pub trait Engine {
 pub struct GameEngine {
     //config: Box<dyn Config + Send>,
     render: Arc<RwLock<Renderer>>,
+    pub main_pos: Arc<RwLock<(i32, i32)>>
 }
 
 impl Engine for GameEngine {
@@ -79,6 +80,8 @@ impl Engine for GameEngine {
         Self: Sized,
     {
         let res = config.get_resolution();
+        let main_obj_x = scene.main_object.position.x;
+        let main_obj_y = scene.main_object.position.y;
         GameEngine {
             //config,
             render: Arc::new(RwLock::from(Renderer::new(
@@ -90,6 +93,7 @@ impl Engine for GameEngine {
                 None,
                 SceneManager::new(scene),
             ))),
+            main_pos: Arc::new(RwLock::from((main_obj_x, main_obj_y)))
         }
     }
 
@@ -119,6 +123,7 @@ impl Engine for GameEngine {
         //let key_pressed_clone = app.key_pressed.clone();
         let keys_pressed_clone = app.keys_pressed.clone();
         let renderer = self.render.clone();
+        let main_pos_arc = self.main_pos.clone();
 
         thread::spawn(move || {
             let window_arc: Arc<Window> = loop {
@@ -153,6 +158,18 @@ impl Engine for GameEngine {
                     .active_scene
                     .main_object
                     .add_position((vector_move.0, vector_move.1));
+
+                    {
+                        let pos = renderer
+                            .read()
+                            .unwrap()
+                            .scene_manager
+                            .active_scene
+                            .main_object
+                            .position;
+                    
+                        *main_pos_arc.write().unwrap() = (pos.x, pos.y);
+                    }
 
                 renderer.write().unwrap().render();
                 match renderer.write().unwrap().emit() {

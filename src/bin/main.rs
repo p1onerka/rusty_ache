@@ -29,6 +29,17 @@ fn main() {
         main_ship_obj,
     );
     let mut engine = init_engine(scene, WIDTH, HEIGHT);
+
+    let pos_arc = engine.main_pos.clone();
+
+    std::thread::spawn(move || {
+    loop {
+        let (x, y) = *pos_arc.read().unwrap();
+        println!("MAIN POS = {} {}", x, y);
+        std::thread::sleep(std::time::Duration::from_millis(30));
+    }
+    });
+
     engine.render().unwrap();
     engine.run().unwrap()
 }
