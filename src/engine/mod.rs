@@ -227,7 +227,6 @@ impl Engine for GameEngine {
         );
 
         let prev_background = self.set_background(image).unwrap().clone();
-        let prev_scene = (*self.render.read().unwrap().scene_manager.active_scene()).clone();
 
         self.set_active_scene(empty_scene);
         if timeout_ms.is_none() {
@@ -241,7 +240,6 @@ impl Engine for GameEngine {
                     break;
                 }
             }
-            self.set_active_scene(prev_scene);
             self.set_background(prev_background).unwrap();
         }
         Ok(())
