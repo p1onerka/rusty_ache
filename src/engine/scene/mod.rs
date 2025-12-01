@@ -56,7 +56,8 @@ impl Scene {
     /// sprite images, positional offsets, and shadow flags. The returned vector
     /// is sorted by the `z` value of the game object's position to maintain correct rendering order.
     pub fn init(&self) -> Vec<(usize, &GameObject, &DynamicImage, (i32, i32), bool)> {
-        let mut renderable_objects: Vec<(usize, &GameObject, &DynamicImage, (i32, i32), bool)> = vec![];
+        let mut renderable_objects: Vec<(usize, &GameObject, &DynamicImage, (i32, i32), bool)> =
+            vec![];
         for (uid, obj) in self.manager.game_objects.iter() {
             for component in obj.components.iter() {
                 if component.get_component_type() == ComponentType::Sprite {
@@ -73,7 +74,8 @@ impl Scene {
                             ));
                         }
                     };*/
-                    renderable_objects.push((*uid,
+                    renderable_objects.push((
+                        *uid,
                         obj,
                         component.get_sprite_unchecked().as_ref().unwrap(),
                         component.get_sprite_offset_unchecked().unwrap(),
@@ -87,7 +89,8 @@ impl Scene {
         for component in self.main_object.components.iter() {
             if component.get_component_type() == ComponentType::Sprite {
                 if let Some(sprite_img) = component.get_sprite_unchecked().as_ref() {
-                    renderable_objects.push((0,
+                    renderable_objects.push((
+                        0,
                         &self.main_object,
                         sprite_img,
                         component.get_sprite_offset_unchecked().unwrap_or((0, 0)),
@@ -100,7 +103,10 @@ impl Scene {
         renderable_objects
     }
 
-    pub fn delete_game_object_by_uid(&mut self, uid: usize) -> Vec<(usize, &GameObject, &DynamicImage, (i32, i32), bool)> {
+    pub fn delete_game_object_by_uid(
+        &mut self,
+        uid: usize,
+    ) -> Vec<(usize, &GameObject, &DynamicImage, (i32, i32), bool)> {
         self.manager.remove_game_object(uid);
         self.init()
     }

@@ -298,7 +298,7 @@ impl GameObjectManager {
         let (uid, object) = self.factory.create_object(components, position);
         self.game_objects.insert(uid, object);
     }
-    
+
     pub fn remove_game_object(&mut self, uid: usize) {
         self.game_objects.remove(&uid);
     }
