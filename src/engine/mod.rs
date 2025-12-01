@@ -13,20 +13,23 @@ pub mod scene;
 pub mod scene_manager;
 pub mod scripts;
 
-use crate::Resolution;
 use crate::engine::config::Config;
 use crate::engine::scene::Scene;
-use crate::engine::scene::game_object::Object;
+use crate::engine::scene::game_object::{Object, Position};
 use crate::engine::scene_manager::SceneManager;
 use crate::engine::scripts::main_obj_script;
+use crate::interface::{ObjectWithImage, init_scene};
 use crate::render::renderer::{DEFAULT_BACKGROUND_COLOR, Renderer};
 use crate::screen::{App, HEIGHT, WIDTH};
+use crate::{Resolution, engine};
+// use crate::end_scene::EndScene;
 //use image::ImageReader;
+use image::{DynamicImage, ImageReader};
 use std::io::Error;
-use std::sync::atomic::Ordering;
+use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, RwLock};
-use std::thread;
-use std::time::Duration;
+use std::time::{Duration, Instant};
+use std::{thread, vec};
 use winit::event_loop::{ControlFlow, EventLoop};
 use winit::window::Window;
 
@@ -48,6 +51,14 @@ pub trait Engine {
     fn new(config: Box<dyn Config + Send>, scene: Scene) -> Self
     where
         Self: Sized;
+
+    // fn set_end_scene<P: AsRef<Path>>(&mut self, image_path: P, timeout_ms: Option<u64>,) -> Result<(), Error>;
+    fn set_end_scene(&mut self, image_path: &str, timeout_ms: Option<u64>) -> Result<(), Error>;
+
+    fn set_background(
+        &mut self,
+        image: Option<DynamicImage>,
+    ) -> Result<Option<DynamicImage>, Error>;
 }
 
 /// Concrete implementation of the game engine.
@@ -198,7 +209,50 @@ impl Engine for GameEngine {
         let event_loop = EventLoop::new().unwrap();
         event_loop.set_control_flow(ControlFlow::Wait);
         let _ = event_loop.run_app(&mut app);
+
         Ok(())
+    }
+
+    fn set_end_scene(&mut self, image_path: &str, timeout_ms: Option<u64>) -> Result<(), Error> {
+        let image = Some(ImageReader::open(image_path).unwrap().decode().unwrap());
+        let empty_scene = Scene::new(
+            vec![],
+            vec![],
+            Position {
+                x: 0,
+                y: 0,
+                z: 0,
+                is_relative: false,
+            },
+        );
+
+        let prev_background = self.set_background(image).unwrap().clone();
+        let prev_scene = (*self.render.read().unwrap().scene_manager.active_scene()).clone();
+
+        self.set_active_scene(empty_scene);
+        if timeout_ms.is_none() {
+            self.run().unwrap();
+        } else {
+            self.render().unwrap();
+            let pause_until = Instant::now() + Duration::from_millis(timeout_ms.unwrap());
+            loop {
+                self.render().unwrap();
+                if Instant::now() >= pause_until {
+                    break;
+                }
+            }
+            self.set_active_scene(prev_scene);
+            self.set_background(prev_background).unwrap();
+        }
+        Ok(())
+    }
+
+    fn set_background(
+        &mut self,
+        image: Option<DynamicImage>,
+    ) -> Result<Option<DynamicImage>, Error> {
+        let prev_image = self.render.write().unwrap().set_background(image);
+        Ok(prev_image)
     }
 }
 

@@ -257,6 +257,12 @@ impl Renderer {
     pub fn emit(&mut self) -> Option<Vec<(u8, u8, u8, u8)>> {
         Some(self.prev_frame.clone())
     }
+
+    pub fn set_background(&mut self, image: Option<DynamicImage>) -> Option<DynamicImage> {
+        let prev_background = self.background.clone();
+        self.background = image;
+        prev_background
+    }
 }
 
 #[cfg(test)]

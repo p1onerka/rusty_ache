@@ -273,7 +273,6 @@ mod tests {
     use super::*;
     use std::sync::atomic::Ordering;
     use std::sync::{Arc, RwLock};
-    use std::thread;
 
     #[test]
     fn test_keys_new_all_false() {
