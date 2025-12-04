@@ -174,54 +174,29 @@ impl Engine for GameEngine {
                     let timeout_ms = renderer.read().unwrap().scene_manager.end_scene.timeout_ms;
                     renderer.write().unwrap().scene_manager =
                         SceneManager::new(scene, EndScene::new(new_background.clone(), timeout_ms));
+                    let pause_until: Instant = if timeout_ms.is_some() { Instant::now() + Duration::from_millis(timeout_ms.unwrap()) } else {Instant::now()};
 
-                    if timeout_ms.is_none() {
-                        loop {
-                            renderer.write().unwrap().render();
-                            match renderer.write().unwrap().emit() {
-                                Some(colors) => {
-                                    let mut pixels = shared_pixel_data_clone
-                                        .write()
-                                        .expect("Producer couldn't lock pixel data");
+                    loop {
+                        renderer.write().unwrap().render();
+                        match renderer.write().unwrap().emit() {
+                            Some(colors) => {
+                                let mut pixels = shared_pixel_data_clone
+                                    .write()
+                                    .expect("Producer couldn't lock pixel data");
 
-                                    for (idx, p) in pixels.iter_mut().take(screen_size).enumerate()
-                                    {
-                                        *p = colors[idx];
-                                    }
-
-                                    window_arc.request_redraw();
+                                for (idx, p) in pixels.iter_mut().take(screen_size).enumerate()
+                                {
+                                    *p = colors[idx];
                                 }
-                                None => {
-                                    continue;
-                                }
+
+                                window_arc.request_redraw();
+                            }
+                            None => {
+                                continue;
                             }
                         }
-                    } else {
-                        let pause_until =
-                            Instant::now() + Duration::from_millis(timeout_ms.unwrap());
-                        loop {
-                            renderer.write().unwrap().render();
-                            match renderer.write().unwrap().emit() {
-                                Some(colors) => {
-                                    let mut pixels = shared_pixel_data_clone
-                                        .write()
-                                        .expect("Producer couldn't lock pixel data");
-
-                                    for (idx, p) in pixels.iter_mut().take(screen_size).enumerate()
-                                    {
-                                        *p = colors[idx];
-                                    }
-
-                                    window_arc.request_redraw();
-                                }
-                                None => {
-                                    continue;
-                                }
-                            }
-                            // self.render().unwrap();
-                            if Instant::now() >= pause_until {
-                                break;
-                            }
+                        if timeout_ms.is_some() && Instant::now() >= pause_until {
+                            break;
                         }
                     }
                     renderer.write().unwrap().scene_manager = SceneManager::new(
