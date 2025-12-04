@@ -13,17 +13,15 @@ pub mod scene;
 pub mod scene_manager;
 pub mod scripts;
 
+use crate::Resolution;
 use crate::engine::config::Config;
 use crate::engine::scene::Scene;
 use crate::engine::scene::game_object::Object;
 use crate::engine::scene_manager::{EndScene, SceneManager};
 use crate::engine::scripts::main_obj_script;
-use crate::interface::{
-    create_obj_with_img, init_scene,
-};
+use crate::interface::{create_obj_with_img, init_scene};
 use crate::render::renderer::{DEFAULT_BACKGROUND_COLOR, Renderer};
 use crate::screen::{App, HEIGHT, WIDTH};
-use crate::Resolution;
 // use crate::end_scene::EndScene;
 //use image::ImageReader;
 use std::io::Error;
