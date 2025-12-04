@@ -148,9 +148,7 @@ pub fn init_engine(scene: Scene, end_scene: EndScene, width: u32, height: u32) -
 
 pub fn init_end_scene(image_path: &str, timeout_ms: Option<u64>) -> EndScene {
     let background = Some(ImageReader::open(image_path).unwrap().decode().unwrap());
-    let empty_object = create_obj_with_img(EMPTY, 0, 0, false);
-    let scene = init_scene(&[], empty_object);
-    EndScene::new(scene, background, timeout_ms)
+    EndScene::new(background, timeout_ms)
 }
 
 pub fn set_end_scene(engine: GameEngine) {

@@ -144,14 +144,6 @@ impl Engine for GameEngine {
             .scene_manager
             .active_scene
             .clone();
-        let end_scene = self
-            .render
-            .read()
-            .unwrap()
-            .scene_manager
-            .end_scene
-            .scene
-            .clone();
         let new_background = renderer
             .read()
             .unwrap()
@@ -178,14 +170,10 @@ impl Engine for GameEngine {
                         .unwrap()
                         .set_background(new_background.clone());
                     let empty_object = create_obj_with_img(EMPTY, 0, 0, false);
-                    let empty_object2 = create_obj_with_img(EMPTY, 0, 0, false);
                     let scene = init_scene(&[], empty_object);
-                    let scene2 = init_scene(&[], empty_object2);
                     let timeout_ms = renderer.read().unwrap().scene_manager.end_scene.timeout_ms;
-                    renderer.write().unwrap().scene_manager = SceneManager::new(
-                        scene,
-                        EndScene::new(scene2, new_background.clone(), timeout_ms),
-                    );
+                    renderer.write().unwrap().scene_manager =
+                        SceneManager::new(scene, EndScene::new(new_background.clone(), timeout_ms));
 
                     if timeout_ms.is_none() {
                         loop {
@@ -209,7 +197,6 @@ impl Engine for GameEngine {
                             }
                         }
                     } else {
-                        // self.render().unwrap();
                         let pause_until =
                             Instant::now() + Duration::from_millis(timeout_ms.unwrap());
                         loop {
@@ -237,10 +224,10 @@ impl Engine for GameEngine {
                             }
                         }
                     }
-                    // renderer.write().unwrap().scene_manager = SceneManager::new(
-                    //     start_scene.clone(),
-                    //     renderer.read().unwrap().scene_manager.end_scene.clone(),
-                    // );
+                    renderer.write().unwrap().scene_manager = SceneManager::new(
+                        start_scene.clone(),
+                        renderer.read().unwrap().scene_manager.end_scene.clone(),
+                    );
                     renderer
                         .write()
                         .unwrap()

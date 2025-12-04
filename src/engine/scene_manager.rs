@@ -52,15 +52,13 @@ impl SceneManager {
 
 #[derive(Clone)]
 pub struct EndScene {
-    pub(crate) scene: Scene,
     pub(crate) background: Option<DynamicImage>,
     pub(crate) timeout_ms: Option<u64>,
 }
 
 impl EndScene {
-    pub fn new(scene: Scene, background: Option<DynamicImage>, timeout_ms: Option<u64>) -> Self {
+    pub fn new(background: Option<DynamicImage>, timeout_ms: Option<u64>) -> Self {
         EndScene {
-            scene,
             background,
             timeout_ms,
         }
