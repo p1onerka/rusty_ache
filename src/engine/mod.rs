@@ -15,18 +15,17 @@ pub mod scripts;
 
 use crate::engine::config::Config;
 use crate::engine::scene::Scene;
-use crate::engine::scene::game_object::{Object, Position};
+use crate::engine::scene::game_object::Object;
 use crate::engine::scene_manager::{EndScene, SceneManager};
 use crate::engine::scripts::main_obj_script;
 use crate::interface::{
-    ObjectWithImage, create_gameobj_vec, create_obj_with_img, init_end_scene, init_scene,
+    create_obj_with_img, init_scene,
 };
 use crate::render::renderer::{DEFAULT_BACKGROUND_COLOR, Renderer};
 use crate::screen::{App, HEIGHT, WIDTH};
-use crate::{Resolution, engine};
+use crate::Resolution;
 // use crate::end_scene::EndScene;
 //use image::ImageReader;
-use image::{DynamicImage, ImageReader};
 use std::io::Error;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, RwLock};
@@ -286,14 +285,14 @@ mod tests {
 
     use super::*;
 
-    fn create_config_with_resolution(
+    fn _create_config_with_resolution(
         width: u32,
         height: u32,
     ) -> Box<dyn config::Config + Send + 'static> {
         Box::new(EngineConfig::new(Resolution::new(width, height)))
     }
 
-    fn create_empty_scene() -> Scene {
+    fn _create_empty_scene() -> Scene {
         Scene::new(
             vec![],
             vec![],

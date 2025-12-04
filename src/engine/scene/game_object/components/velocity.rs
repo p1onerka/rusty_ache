@@ -4,8 +4,6 @@
 //! to update an entity's movement or position each frame.
 //! It implements the `Component` trait to integrate with the component system.
 
-use crate::engine::scene::game_object::components;
-
 use super::*;
 use std::any::Any;
 

@@ -74,7 +74,7 @@ mod tests {
 
     use super::*;
 
-    fn create_test_position(x: i32, y: i32, z: i32, is_relative: bool) -> Position {
+    fn _create_test_position(x: i32, y: i32, z: i32, is_relative: bool) -> Position {
         Position {
             x,
             y,
@@ -83,15 +83,15 @@ mod tests {
         }
     }
 
-    fn create_test_components() -> Vec<Box<dyn Component + Send + Sync>> {
+    fn _create_test_components() -> Vec<Box<dyn Component + Send + Sync>> {
         vec![Box::new(Sprite::new(None, false, (0, 0)))]
     }
 
-    fn create_simple_scene() -> Scene {
+    fn _create_simple_scene() -> Scene {
         Scene::new(
             vec![],
-            create_test_components(),
-            create_test_position(0, 0, 0, false),
+            _create_test_components(),
+            _create_test_position(0, 0, 0, false),
         )
     }
 
@@ -100,14 +100,14 @@ mod tests {
 
         for i in 0..sprite_count {
             let obj = GameObject::new(
-                create_test_components(),
+                _create_test_components(),
                 None,
-                create_test_position(i as i32, i as i32, i as i32, false),
+                _create_test_position(i as i32, i as i32, i as i32, false),
             );
             objects.push(obj);
         }
 
-        Scene::new(objects, vec![], create_test_position(0, 0, 0, false))
+        Scene::new(objects, vec![], _create_test_position(0, 0, 0, false))
     }
 }
 

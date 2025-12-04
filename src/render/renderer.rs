@@ -269,11 +269,9 @@ impl Renderer {
 mod tests {
     use image::{Rgba, RgbaImage};
 
-    use crate::interface::{create_obj_with_img, init_scene};
-
     use super::*;
 
-    const DEFAULT_BACKGROUND: (u8, u8, u8, u8) = (
+    const _DEFAULT_BACKGROUND: (u8, u8, u8, u8) = (
         DEFAULT_BACKGROUND_COLOR.0,
         DEFAULT_BACKGROUND_COLOR.1,
         DEFAULT_BACKGROUND_COLOR.2,

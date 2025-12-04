@@ -6,8 +6,6 @@
 //!
 //! These functions support workflow from asset loading to scene setup to engine initialization.
 
-use std::sync::{Arc, atomic::AtomicBool};
-
 pub const EMPTY: &'static str = "src/bin/resources/empty.png";
 
 use image::ImageReader;
@@ -153,7 +151,6 @@ pub fn init_end_scene(image_path: &str, timeout_ms: Option<u64>) -> EndScene {
 
 #[cfg(test)]
 mod tests {
-    use std::char::TryFromCharError;
 
     use super::*;
 
