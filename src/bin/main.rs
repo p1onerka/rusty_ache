@@ -36,7 +36,8 @@ fn main() {
     let end_scene_flag = engine.is_end_scene_active.clone();
     std::thread::spawn(move || {
         loop {
-            let (x, _) = *main_pos_arc.read().unwrap();
+            let (x, y) = *main_pos_arc.read().unwrap();
+            println!("position of main object is ({}, {})", x, y);
             if x > 150 {
                 end_scene_flag.store(true, std::sync::atomic::Ordering::SeqCst);
             }
