@@ -53,9 +53,8 @@ impl Component for Velocity {
     }
 
     fn clone_box(&self) -> Box<dyn Component + Send + Sync> {
-        Box::new(self.clone())  
+        Box::new(self.clone())
     }
-
 }
 
 #[cfg(test)]

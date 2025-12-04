@@ -18,7 +18,9 @@ use crate::engine::scene::Scene;
 use crate::engine::scene::game_object::{Object, Position};
 use crate::engine::scene_manager::{EndScene, SceneManager};
 use crate::engine::scripts::main_obj_script;
-use crate::interface::{ObjectWithImage, create_gameobj_vec, create_obj_with_img, init_end_scene, init_scene};
+use crate::interface::{
+    ObjectWithImage, create_gameobj_vec, create_obj_with_img, init_end_scene, init_scene,
+};
 use crate::render::renderer::{DEFAULT_BACKGROUND_COLOR, Renderer};
 use crate::screen::{App, HEIGHT, WIDTH};
 use crate::{Resolution, engine};
@@ -151,12 +153,12 @@ impl Engine for GameEngine {
             .scene
             .clone();
         let new_background = renderer
-                        .read()
-                        .unwrap()
-                        .scene_manager
-                        .end_scene
-                        .background
-                        .clone();
+            .read()
+            .unwrap()
+            .scene_manager
+            .end_scene
+            .background
+            .clone();
 
         thread::spawn(move || {
             let window_arc: Arc<Window> = loop {
@@ -171,8 +173,10 @@ impl Engine for GameEngine {
             let screen_size = (WIDTH * HEIGHT) as usize;
             loop {
                 if is_end_scene_active.load(Ordering::SeqCst) {
-                    
-                    let prev_background = renderer.write().unwrap().set_background(new_background.clone());
+                    let prev_background = renderer
+                        .write()
+                        .unwrap()
+                        .set_background(new_background.clone());
                     let empty_object = create_obj_with_img(EMPTY, 0, 0, false);
                     let empty_object2 = create_obj_with_img(EMPTY, 0, 0, false);
                     let scene = init_scene(&[], empty_object);
@@ -180,7 +184,7 @@ impl Engine for GameEngine {
                     let timeout_ms = renderer.read().unwrap().scene_manager.end_scene.timeout_ms;
                     renderer.write().unwrap().scene_manager = SceneManager::new(
                         scene,
-                        EndScene::new(scene2, new_background.clone(), timeout_ms) 
+                        EndScene::new(scene2, new_background.clone(), timeout_ms),
                     );
 
                     if timeout_ms.is_none() {
