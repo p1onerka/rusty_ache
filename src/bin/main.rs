@@ -29,7 +29,7 @@ fn main() {
         main_ship_obj,
     );
 
-    let end_scene = init_end_scene("src/bin/resources/game_over.jpg", None);
+    let end_scene = init_end_scene("src/bin/resources/game_over.jpg", Some(7000));
     let mut engine = init_engine(scene, end_scene, WIDTH, HEIGHT);
 
     let main_pos_arc = engine.main_pos.clone();

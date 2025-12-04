@@ -174,7 +174,11 @@ impl Engine for GameEngine {
                     let timeout_ms = renderer.read().unwrap().scene_manager.end_scene.timeout_ms;
                     renderer.write().unwrap().scene_manager =
                         SceneManager::new(scene, EndScene::new(new_background.clone(), timeout_ms));
-                    let pause_until: Instant = if timeout_ms.is_some() { Instant::now() + Duration::from_millis(timeout_ms.unwrap()) } else {Instant::now()};
+                    let pause_until: Instant = if timeout_ms.is_some() {
+                        Instant::now() + Duration::from_millis(timeout_ms.unwrap())
+                    } else {
+                        Instant::now()
+                    };
 
                     loop {
                         renderer.write().unwrap().render();
@@ -184,8 +188,7 @@ impl Engine for GameEngine {
                                     .write()
                                     .expect("Producer couldn't lock pixel data");
 
-                                for (idx, p) in pixels.iter_mut().take(screen_size).enumerate()
-                                {
+                                for (idx, p) in pixels.iter_mut().take(screen_size).enumerate() {
                                     *p = colors[idx];
                                 }
 
