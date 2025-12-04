@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["HEIGHT","WIDTH"],"fn":["example"],"struct":["App","Keys","Screen"]};

@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["DEFAULT_BACKGROUND_COLOR","OFFSET","SHADOW_OPAQUENESS"],"struct":["Rectangle","Renderable","Renderer"]};
