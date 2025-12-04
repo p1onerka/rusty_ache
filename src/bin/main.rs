@@ -2,7 +2,7 @@ use rusty_ache::engine::Engine;
 use rusty_ache::engine::scene::game_object::GameObject;
 use rusty_ache::engine::scene::game_object::components::script::Script;
 use rusty_ache::engine::scene::game_object::position::Position;
-use rusty_ache::interface::{create_obj_with_img, init_engine, init_scene};
+use rusty_ache::interface::{create_obj_with_img, init_engine, init_scene, init_end_scene, set_end_scene};
 use rusty_ache::screen::{HEIGHT, WIDTH};
 
 fn main() {
@@ -28,13 +28,19 @@ fn main() {
         ],
         main_ship_obj,
     );
-    let mut engine = init_engine(scene, WIDTH, HEIGHT);
+
+    let end_scene = init_end_scene("src/bin/resources/game_over.jpg", None);
+    let mut engine = init_engine(scene, end_scene, WIDTH, HEIGHT);
 
     let main_pos_arc = engine.main_pos.clone();
+    let end_scene_flag = engine.is_end_scene_active.clone();
     std::thread::spawn(move || {
         loop {
             let (x, y) = *main_pos_arc.read().unwrap();
-            println!("position of main object is ({}, {})", x, y);
+            // println!("position of main object is ({}, {})", x, y);
+            if x > 150 {
+                end_scene_flag.store(true, std::sync::atomic::Ordering::SeqCst);
+            }
         }
     });
 
@@ -42,6 +48,7 @@ fn main() {
     engine.run().unwrap()
 }
 
+#[derive(Clone)]
 pub struct MyScript {
     is_downed: bool,
 }
@@ -69,6 +76,10 @@ impl Script for MyScript {
             };
             self.is_downed = false;
         }
+    }
+
+    fn clone_box(&self) -> Box<dyn Script + Send + Sync> {
+        Box::new(self.clone())
     }
 }
 

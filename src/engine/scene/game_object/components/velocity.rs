@@ -4,10 +4,13 @@
 //! to update an entity's movement or position each frame.
 //! It implements the `Component` trait to integrate with the component system.
 
+use crate::engine::scene::game_object::components;
+
 use super::*;
 use std::any::Any;
 
 /// Component storing velocity in x and y directions.
+#[derive(Clone)]
 pub struct Velocity {
     _x: usize,
     _y: usize,
@@ -48,6 +51,11 @@ impl Component for Velocity {
     fn get_component_type(&self) -> ComponentType {
         ComponentType::Velocity
     }
+
+    fn clone_box(&self) -> Box<dyn Component + Send + Sync> {
+        Box::new(self.clone())  
+    }
+
 }
 
 #[cfg(test)]

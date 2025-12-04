@@ -12,6 +12,7 @@ use crate::engine::scene::game_object::components::{Component, ComponentType};
 use image::DynamicImage;
 
 /// A component representing a 2D sprite with image, shadow, and offset.
+#[derive(Clone)]
 pub struct Sprite {
     pub image: Option<DynamicImage>,
     pub shadow: bool,
@@ -56,6 +57,10 @@ impl Component for Sprite {
 
     fn get_sprite_offset_unchecked(&self) -> Option<(i32, i32)> {
         Some(self.offset)
+    }
+
+    fn clone_box(&self) -> Box<dyn Component + Send + Sync> {
+        Box::new(self.clone())
     }
 }
 

@@ -66,4 +66,6 @@ pub trait Component: Any {
     fn get_sprite_offset_unchecked(&self) -> Option<(i32, i32)> {
         None
     }
+
+    fn clone_box(&self) -> Box<dyn Component + Send + Sync>;
 }

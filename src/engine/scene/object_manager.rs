@@ -15,6 +15,7 @@ use std::collections::{HashMap, HashSet};
 ///
 /// Tracks allocated objects count and a set of freed unique identifiers (`uids`)
 /// allowing reuse of IDs to prevent overflow and manage resources efficiently.
+#[derive(Clone)]
 struct GameObjectFactory {
     /// Set of reusable unique IDs from deleted or freed objects.
     uids: HashSet<usize>,
@@ -277,6 +278,8 @@ mod factory_tests {
         assert!(factory.uids.is_empty());
     }
 }
+
+#[derive(Clone)]
 pub struct GameObjectManager {
     pub game_objects: HashMap<usize, GameObject>,
     factory: GameObjectFactory,

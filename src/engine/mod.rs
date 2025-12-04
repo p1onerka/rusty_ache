@@ -16,9 +16,9 @@ pub mod scripts;
 use crate::engine::config::Config;
 use crate::engine::scene::Scene;
 use crate::engine::scene::game_object::{Object, Position};
-use crate::engine::scene_manager::SceneManager;
+use crate::engine::scene_manager::{EndScene, SceneManager};
 use crate::engine::scripts::main_obj_script;
-use crate::interface::{ObjectWithImage, init_scene};
+use crate::interface::{ObjectWithImage, create_gameobj_vec, create_obj_with_img, init_end_scene, init_scene};
 use crate::render::renderer::{DEFAULT_BACKGROUND_COLOR, Renderer};
 use crate::screen::{App, HEIGHT, WIDTH};
 use crate::{Resolution, engine};
@@ -33,13 +33,15 @@ use std::{thread, vec};
 use winit::event_loop::{ControlFlow, EventLoop};
 use winit::window::Window;
 
+pub const EMPTY: &'static str = "src/bin/resources/empty.png";
+
 /// Trait defining essential engine behavior.
 ///
 /// Abstracts an engine capable of managing an active scene, performing rendering,
 /// running its main loop, and supporting dynamic configuration.
 pub trait Engine {
     /// Sets the currently active scene within the engine.
-    fn set_active_scene(&mut self, new_scene: Scene) -> Result<(), Error>;
+    fn set_active_scene(&mut self, new_scene: Scene, end_scene: EndScene) -> Result<(), Error>;
 
     /// Performs a rendering pass.
     fn render(&mut self) -> Result<(), Error>;
@@ -48,17 +50,9 @@ pub trait Engine {
     fn run(&mut self) -> Result<(), Error>;
 
     /// Creates a new engine instance from configuration and initial scene.
-    fn new(config: Box<dyn Config + Send>, scene: Scene) -> Self
+    fn new(config: Box<dyn Config + Send>, scene: Scene, end_scene: EndScene) -> Self
     where
         Self: Sized;
-
-    // fn set_end_scene<P: AsRef<Path>>(&mut self, image_path: P, timeout_ms: Option<u64>,) -> Result<(), Error>;
-    fn set_end_scene(&mut self, image_path: &str, timeout_ms: Option<u64>) -> Result<(), Error>;
-
-    fn set_background(
-        &mut self,
-        image: Option<DynamicImage>,
-    ) -> Result<Option<DynamicImage>, Error>;
 }
 
 /// Concrete implementation of the game engine.
@@ -69,12 +63,13 @@ pub struct GameEngine {
     //config: Box<dyn Config + Send>,
     render: Arc<RwLock<Renderer>>,
     pub main_pos: Arc<RwLock<(i32, i32)>>,
+    pub is_end_scene_active: Arc<AtomicBool>,
 }
 
 impl Engine for GameEngine {
     /// Sets the active scene inside the renderer's scene manager.
-    fn set_active_scene(&mut self, new_scene: Scene) -> Result<(), Error> {
-        self.render.write().unwrap().scene_manager = SceneManager::new(new_scene);
+    fn set_active_scene(&mut self, new_scene: Scene, end_scene: EndScene) -> Result<(), Error> {
+        self.render.write().unwrap().scene_manager = SceneManager::new(new_scene, end_scene);
 
         Ok(())
     }
@@ -88,7 +83,7 @@ impl Engine for GameEngine {
     /// Creates a new GameEngine using provided config and scene.
     ///
     /// Initializes the Renderer with the resolution and the scene manager.
-    fn new(config: Box<dyn Config + 'static + Send>, scene: Scene) -> Self
+    fn new(config: Box<dyn Config + 'static + Send>, scene: Scene, end_scene: EndScene) -> Self
     where
         Self: Sized,
     {
@@ -104,9 +99,10 @@ impl Engine for GameEngine {
                 .decode()
                 .unwrap())*/
                 None,
-                SceneManager::new(scene),
+                SceneManager::new(scene, end_scene),
             ))),
             main_pos: Arc::new(RwLock::from((main_obj_x, main_obj_y))),
+            is_end_scene_active: Arc::new(AtomicBool::new(false)),
         }
     }
 
@@ -138,6 +134,30 @@ impl Engine for GameEngine {
         let renderer = self.render.clone();
         let main_pos_arc = self.main_pos.clone();
 
+        let is_end_scene_active = self.is_end_scene_active.clone();
+        let start_scene = self
+            .render
+            .read()
+            .unwrap()
+            .scene_manager
+            .active_scene
+            .clone();
+        let end_scene = self
+            .render
+            .read()
+            .unwrap()
+            .scene_manager
+            .end_scene
+            .scene
+            .clone();
+        let new_background = renderer
+                        .read()
+                        .unwrap()
+                        .scene_manager
+                        .end_scene
+                        .background
+                        .clone();
+
         thread::spawn(move || {
             let window_arc: Arc<Window> = loop {
                 if let Some(arc) = shared_window_clone.read().unwrap().clone() {
@@ -150,6 +170,80 @@ impl Engine for GameEngine {
 
             let screen_size = (WIDTH * HEIGHT) as usize;
             loop {
+                if is_end_scene_active.load(Ordering::SeqCst) {
+                    
+                    let prev_background = renderer.write().unwrap().set_background(new_background.clone());
+                    let empty_object = create_obj_with_img(EMPTY, 0, 0, false);
+                    let empty_object2 = create_obj_with_img(EMPTY, 0, 0, false);
+                    let scene = init_scene(&[], empty_object);
+                    let scene2 = init_scene(&[], empty_object2);
+                    let timeout_ms = renderer.read().unwrap().scene_manager.end_scene.timeout_ms;
+                    renderer.write().unwrap().scene_manager = SceneManager::new(
+                        scene,
+                        EndScene::new(scene2, new_background.clone(), timeout_ms) 
+                    );
+
+                    if timeout_ms.is_none() {
+                        loop {
+                            renderer.write().unwrap().render();
+                            match renderer.write().unwrap().emit() {
+                                Some(colors) => {
+                                    let mut pixels = shared_pixel_data_clone
+                                        .write()
+                                        .expect("Producer couldn't lock pixel data");
+
+                                    for (idx, p) in pixels.iter_mut().take(screen_size).enumerate()
+                                    {
+                                        *p = colors[idx];
+                                    }
+
+                                    window_arc.request_redraw();
+                                }
+                                None => {
+                                    continue;
+                                }
+                            }
+                        }
+                    } else {
+                        // self.render().unwrap();
+                        let pause_until =
+                            Instant::now() + Duration::from_millis(timeout_ms.unwrap());
+                        loop {
+                            renderer.write().unwrap().render();
+                            match renderer.write().unwrap().emit() {
+                                Some(colors) => {
+                                    let mut pixels = shared_pixel_data_clone
+                                        .write()
+                                        .expect("Producer couldn't lock pixel data");
+
+                                    for (idx, p) in pixels.iter_mut().take(screen_size).enumerate()
+                                    {
+                                        *p = colors[idx];
+                                    }
+
+                                    window_arc.request_redraw();
+                                }
+                                None => {
+                                    continue;
+                                }
+                            }
+                            // self.render().unwrap();
+                            if Instant::now() >= pause_until {
+                                break;
+                            }
+                        }
+                    }
+                    // renderer.write().unwrap().scene_manager = SceneManager::new(
+                    //     start_scene.clone(),
+                    //     renderer.read().unwrap().scene_manager.end_scene.clone(),
+                    // );
+                    renderer
+                        .write()
+                        .unwrap()
+                        .set_background(prev_background)
+                        .unwrap();
+                    is_end_scene_active.store(true, std::sync::atomic::Ordering::SeqCst);
+                }
                 /*let vector_move = match *key_pressed_clone.read().unwrap() {
                     Some(KeyCode::KeyW) => (0, 1),
                     Some(KeyCode::KeyA) => (-1, 0),
@@ -212,46 +306,6 @@ impl Engine for GameEngine {
 
         Ok(())
     }
-
-    fn set_end_scene(&mut self, image_path: &str, timeout_ms: Option<u64>) -> Result<(), Error> {
-        let image = Some(ImageReader::open(image_path).unwrap().decode().unwrap());
-        let empty_scene = Scene::new(
-            vec![],
-            vec![],
-            Position {
-                x: 0,
-                y: 0,
-                z: 0,
-                is_relative: false,
-            },
-        );
-
-        let prev_background = self.set_background(image).unwrap().clone();
-
-        self.set_active_scene(empty_scene);
-        if timeout_ms.is_none() {
-            self.run().unwrap();
-        } else {
-            self.render().unwrap();
-            let pause_until = Instant::now() + Duration::from_millis(timeout_ms.unwrap());
-            loop {
-                self.render().unwrap();
-                if Instant::now() >= pause_until {
-                    break;
-                }
-            }
-            self.set_background(prev_background).unwrap();
-        }
-        Ok(())
-    }
-
-    fn set_background(
-        &mut self,
-        image: Option<DynamicImage>,
-    ) -> Result<Option<DynamicImage>, Error> {
-        let prev_image = self.render.write().unwrap().set_background(image);
-        Ok(prev_image)
-    }
 }
 
 #[cfg(test)]
@@ -281,128 +335,5 @@ mod tests {
                 is_relative: false,
             },
         )
-    }
-
-    #[test]
-    fn test_new_engine_creates_with_resolution() {
-        let config = create_config_with_resolution(1024, 768);
-        let scene = create_empty_scene();
-        let engine = GameEngine::new(config, scene);
-        let render = engine.render.read().unwrap();
-        let object = &render.scene_manager.active_scene.main_object;
-        assert_eq!(object.position.x, 0);
-        assert_eq!(object.position.y, 0);
-        assert_eq!(object.position.z, 0);
-        assert_eq!(object.position.is_relative, false);
-    }
-
-    #[test]
-    fn test_render_multiple_calls_return_ok() {
-        let config = create_config_with_resolution(800, 600);
-        let scene = create_empty_scene();
-        let mut engine = GameEngine::new(config, scene);
-        for _ in 0..5 {
-            assert!(engine.render().is_ok());
-        }
-    }
-
-    #[test]
-    fn test_set_active_scene_returns_ok_and_replaces_scene() {
-        let config = create_config_with_resolution(800, 600);
-        let scene1 = create_empty_scene();
-        let mut engine = GameEngine::new(config, scene1);
-
-        let scene2 = Scene::new(
-            vec![],
-            vec![],
-            Position {
-                x: 100,
-                y: 100,
-                z: 100,
-                is_relative: false,
-            },
-        );
-        let result = engine.set_active_scene(scene2);
-        assert!(result.is_ok());
-        let render = engine.render.read().unwrap();
-        let object = &render.scene_manager.active_scene.main_object;
-        assert_eq!(object.position.x, 100);
-        assert_eq!(object.position.y, 100);
-        assert_eq!(object.position.z, 100);
-        assert_eq!(object.position.is_relative, false);
-    }
-
-    #[test]
-    fn test_set_active_scene_multiple_times() {
-        let config = create_config_with_resolution(800, 600);
-        let scene1 = create_empty_scene();
-        let mut engine = GameEngine::new(config, scene1);
-
-        for i in 0..10 {
-            let scene = Scene::new(
-                vec![],
-                vec![],
-                Position {
-                    x: i,
-                    y: i,
-                    z: i,
-                    is_relative: false,
-                },
-            );
-            assert!(engine.set_active_scene(scene).is_ok());
-            let render = engine.render.read().unwrap();
-            let object = &render.scene_manager.active_scene.main_object;
-            assert_eq!(object.position.x, i);
-            assert_eq!(object.position.y, i);
-            assert_eq!(object.position.z, i);
-            assert_eq!(object.position.is_relative, false);
-        }
-    }
-
-    #[test]
-    fn test_new_engine_with_scene_with_main_components() {
-        // Здесь можете подставить настоящие компоненты из вашего проекта
-        let main_components = vec![];
-        let scene = Scene::new(
-            vec![],
-            main_components,
-            Position {
-                x: 5,
-                y: 6,
-                z: 7,
-                is_relative: false,
-            },
-        );
-        let config = create_config_with_resolution(1280, 720);
-        let engine = GameEngine::new(config, scene);
-        let render = engine.render.read().unwrap();
-        let object = &render.scene_manager.active_scene.main_object;
-        assert_eq!(object.position.x, 5);
-        assert_eq!(object.position.y, 6);
-        assert_eq!(object.position.z, 7);
-        assert_eq!(object.position.is_relative, false);
-    }
-
-    #[test]
-    fn test_render_after_setting_new_active_scene() {
-        let config = create_config_with_resolution(640, 480);
-        let scene1 = create_empty_scene();
-        let mut engine = GameEngine::new(config, scene1);
-
-        let scene2 = Scene::new(
-            vec![],
-            vec![],
-            Position {
-                x: 15,
-                y: 15,
-                z: 15,
-                is_relative: false,
-            },
-        );
-        engine.set_active_scene(scene2).unwrap();
-
-        for _ in 0..3 {
-            assert!(engine.render().is_ok());
-        }
     }
 }

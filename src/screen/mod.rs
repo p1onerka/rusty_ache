@@ -23,8 +23,8 @@ use winit::keyboard::{KeyCode, PhysicalKey};
 use winit::window::{Window, WindowAttributes, WindowId};
 
 /// Screen dimensions constants.
-pub const WIDTH: u32 = 300;
-pub const HEIGHT: u32 = 300;
+pub const WIDTH: u32 = 360;
+pub const HEIGHT: u32 = 360;
 
 /// Represents the screen on which game frames are drawn.
 ///

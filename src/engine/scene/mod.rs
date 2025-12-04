@@ -18,6 +18,7 @@ pub mod game_object;
 mod object_manager;
 
 /// Represents the game scene containing game objects and main entity.
+#[derive(Clone)]
 pub struct Scene {
     /// Manager responsible for storing and controlling multiple game objects.
     manager: GameObjectManager,
