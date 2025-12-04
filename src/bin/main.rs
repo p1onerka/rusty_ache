@@ -2,9 +2,7 @@ use rusty_ache::engine::Engine;
 use rusty_ache::engine::scene::game_object::GameObject;
 use rusty_ache::engine::scene::game_object::components::script::Script;
 use rusty_ache::engine::scene::game_object::position::Position;
-use rusty_ache::interface::{
-    create_obj_with_img, init_end_scene, init_engine, init_scene, set_end_scene,
-};
+use rusty_ache::interface::{create_obj_with_img, init_end_scene, init_engine, init_scene};
 use rusty_ache::screen::{HEIGHT, WIDTH};
 
 fn main() {

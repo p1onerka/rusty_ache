@@ -151,12 +151,6 @@ pub fn init_end_scene(image_path: &str, timeout_ms: Option<u64>) -> EndScene {
     EndScene::new(background, timeout_ms)
 }
 
-pub fn set_end_scene(engine: GameEngine) {
-    engine
-        .is_end_scene_active
-        .store(true, std::sync::atomic::Ordering::SeqCst);
-}
-
 #[cfg(test)]
 mod tests {
     use std::char::TryFromCharError;

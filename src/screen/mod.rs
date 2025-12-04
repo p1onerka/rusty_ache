@@ -353,13 +353,13 @@ mod tests {
 
     #[test]
     fn test_width_constant() {
-        assert_eq!(WIDTH, 300);
+        assert_eq!(WIDTH, 360);
         assert!(WIDTH > 0);
     }
 
     #[test]
     fn test_height_constant() {
-        assert_eq!(HEIGHT, 300);
+        assert_eq!(HEIGHT, 360);
         assert!(HEIGHT > 0);
     }
 
