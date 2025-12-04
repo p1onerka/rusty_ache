@@ -23,8 +23,8 @@ use winit::keyboard::{KeyCode, PhysicalKey};
 use winit::window::{Window, WindowAttributes, WindowId};
 
 /// Screen dimensions constants.
-pub const WIDTH: u32 = 300;
-pub const HEIGHT: u32 = 300;
+pub const WIDTH: u32 = 360;
+pub const HEIGHT: u32 = 360;
 
 /// Represents the screen on which game frames are drawn.
 ///
@@ -273,7 +273,6 @@ mod tests {
     use super::*;
     use std::sync::atomic::Ordering;
     use std::sync::{Arc, RwLock};
-    use std::thread;
 
     #[test]
     fn test_keys_new_all_false() {
@@ -354,13 +353,13 @@ mod tests {
 
     #[test]
     fn test_width_constant() {
-        assert_eq!(WIDTH, 300);
+        assert_eq!(WIDTH, 360);
         assert!(WIDTH > 0);
     }
 
     #[test]
     fn test_height_constant() {
-        assert_eq!(HEIGHT, 300);
+        assert_eq!(HEIGHT, 360);
         assert!(HEIGHT > 0);
     }
 

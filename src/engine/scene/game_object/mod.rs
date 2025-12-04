@@ -57,6 +57,7 @@ pub trait Object {
 
 /// The primary game object structure holding components, optional script, and position.
 /// Maximum 256 objects per 1 scene
+#[derive(Clone)]
 pub struct GameObject {
     pub components: Vec<Box<dyn Component + Send + Sync>>,
     pub script: Option<Box<dyn Script + Send + Sync>>,
@@ -132,6 +133,18 @@ impl Object for GameObject {
     ///
     /// Currently a stub; should be implemented to invoke `script.action`.
     fn run_action(&self) {}
+}
+
+impl Clone for Box<dyn Component + Send + Sync> {
+    fn clone(&self) -> Self {
+        self.clone_box()
+    }
+}
+
+impl Clone for Box<dyn Script + Send + Sync> {
+    fn clone(&self) -> Self {
+        self.clone_box()
+    }
 }
 
 #[cfg(test)]

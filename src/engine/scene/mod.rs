@@ -18,6 +18,7 @@ pub mod game_object;
 mod object_manager;
 
 /// Represents the game scene containing game objects and main entity.
+#[derive(Clone)]
 pub struct Scene {
     /// Manager responsible for storing and controlling multiple game objects.
     manager: GameObjectManager,
@@ -55,9 +56,10 @@ impl Scene {
     /// Returns a vector of tuples containing references to game objects and their
     /// sprite images, positional offsets, and shadow flags. The returned vector
     /// is sorted by the `z` value of the game object's position to maintain correct rendering order.
-    pub fn init(&self) -> Vec<(&GameObject, &DynamicImage, (i32, i32), bool)> {
-        let mut renderable_objects: Vec<(&GameObject, &DynamicImage, (i32, i32), bool)> = vec![];
-        for obj in self.manager.game_objects.values() {
+    pub fn init(&self) -> Vec<(usize, &GameObject, &DynamicImage, (i32, i32), bool)> {
+        let mut renderable_objects: Vec<(usize, &GameObject, &DynamicImage, (i32, i32), bool)> =
+            vec![];
+        for (uid, obj) in self.manager.game_objects.iter() {
             for component in obj.components.iter() {
                 if component.get_component_type() == ComponentType::Sprite {
                     /*match &component.get_shadow_unchecked() {
@@ -74,6 +76,7 @@ impl Scene {
                         }
                     };*/
                     renderable_objects.push((
+                        *uid,
                         obj,
                         component.get_sprite_unchecked().as_ref().unwrap(),
                         component.get_sprite_offset_unchecked().unwrap(),
@@ -82,12 +85,13 @@ impl Scene {
                 }
             }
         }
-        renderable_objects.sort_by(|a, b| a.0.position.z.cmp(&b.0.position.z));
+        renderable_objects.sort_by(|a, b| a.1.position.z.cmp(&b.1.position.z));
 
         for component in self.main_object.components.iter() {
             if component.get_component_type() == ComponentType::Sprite {
                 if let Some(sprite_img) = component.get_sprite_unchecked().as_ref() {
                     renderable_objects.push((
+                        0,
                         &self.main_object,
                         sprite_img,
                         component.get_sprite_offset_unchecked().unwrap_or((0, 0)),
@@ -98,6 +102,14 @@ impl Scene {
         }
 
         renderable_objects
+    }
+
+    pub fn delete_game_object_by_uid(
+        &mut self,
+        uid: usize,
+    ) -> Vec<(usize, &GameObject, &DynamicImage, (i32, i32), bool)> {
+        self.manager.remove_game_object(uid);
+        self.init()
     }
 }
 

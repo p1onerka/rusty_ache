@@ -8,6 +8,7 @@ use super::*;
 use std::any::Any;
 
 /// Component storing velocity in x and y directions.
+#[derive(Clone)]
 pub struct Velocity {
     _x: usize,
     _y: usize,
@@ -47,6 +48,10 @@ impl Component for Velocity {
     /// Returns the component type identifier as `ComponentType::Velocity`.
     fn get_component_type(&self) -> ComponentType {
         ComponentType::Velocity
+    }
+
+    fn clone_box(&self) -> Box<dyn Component + Send + Sync> {
+        Box::new(self.clone())
     }
 }
 

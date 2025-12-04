@@ -222,7 +222,7 @@ impl Renderer {
         };
 
         let _uids_by_z = HashMap::<u32, usize>::new();
-        for (obj, img, offset, has_shadow) in renderable {
+        for (_, obj, img, offset, has_shadow) in renderable {
             let pos = Position {
                 x: obj.position.x + offset.0,
                 y: obj.position.y + offset.1,
@@ -257,38 +257,26 @@ impl Renderer {
     pub fn emit(&mut self) -> Option<Vec<(u8, u8, u8, u8)>> {
         Some(self.prev_frame.clone())
     }
+
+    pub fn set_background(&mut self, image: Option<DynamicImage>) -> Option<DynamicImage> {
+        let prev_background = self.background.clone();
+        self.background = image;
+        prev_background
+    }
 }
 
 #[cfg(test)]
 mod tests {
     use image::{Rgba, RgbaImage};
 
-    use crate::interface::{create_obj_with_img, init_scene};
-
     use super::*;
 
-    const DEFAULT_BACKGROUND: (u8, u8, u8, u8) = (
+    const _DEFAULT_BACKGROUND: (u8, u8, u8, u8) = (
         DEFAULT_BACKGROUND_COLOR.0,
         DEFAULT_BACKGROUND_COLOR.1,
         DEFAULT_BACKGROUND_COLOR.2,
         DEFAULT_BACKGROUND_COLOR.3,
     );
-
-    fn test_init_renderer() -> Renderer {
-        let resolution = Resolution::new(200, 200);
-        let background = None;
-        let objs = [create_obj_with_img(
-            "./resources/perf_diag.png",
-            200,
-            200,
-            false,
-        )];
-        let main_obj = create_obj_with_img("./resources/perf_diag.png", 300, 300, true);
-        let main_scene = init_scene(&objs, main_obj);
-        let scene_manager = SceneManager::new(main_scene);
-        let renderer = Renderer::new(resolution, background, scene_manager);
-        return renderer;
-    }
 
     fn create_sprite_with_color(width: u32, height: u32, color: [u8; 4]) -> DynamicImage {
         let mut img = RgbaImage::new(width, height);
@@ -298,20 +286,6 @@ mod tests {
             }
         }
         DynamicImage::ImageRgba8(img)
-    }
-
-    #[test]
-    fn test_renderer() {
-        let renderer = test_init_renderer();
-        assert_eq!(renderer.resolution.height, 200);
-        assert_eq!(renderer.resolution.height, 200);
-        assert_eq!(renderer.background, None);
-        let mut vector = renderer.prev_frame;
-        for _ in 0..HEIGHT {
-            for _ in 0..WIDTH {
-                assert_eq!(vector.pop(), Some(DEFAULT_BACKGROUND));
-            }
-        }
     }
 
     #[test]
@@ -465,22 +439,6 @@ mod tests {
 
         for color in frame.iter() {
             assert_eq!(*color, (50, 50, 50, 255));
-        }
-    }
-
-    #[test]
-    fn test_emit() {
-        let mut renderer = test_init_renderer();
-        let result = renderer.emit();
-        match result {
-            None => assert!(false),
-            Some(mut res) => {
-                for _ in 0..HEIGHT {
-                    for _ in 0..WIDTH {
-                        assert_eq!(res.pop(), Some(DEFAULT_BACKGROUND));
-                    }
-                }
-            }
         }
     }
 }

@@ -27,4 +27,6 @@ pub trait Script {
     fn new(is_downed: bool) -> Self
     where
         Self: Sized;
+
+    fn clone_box(&self) -> Box<dyn Script + Send + Sync>;
 }
