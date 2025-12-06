@@ -134,13 +134,6 @@ impl Engine for GameEngine {
         let main_pos_arc = self.main_pos.clone();
 
         let is_end_scene_active = self.is_end_scene_active.clone();
-        let start_scene = self
-            .render
-            .read()
-            .unwrap()
-            .scene_manager
-            .active_scene
-            .clone();
         let new_background = renderer
             .read()
             .unwrap()
@@ -157,11 +150,10 @@ impl Engine for GameEngine {
                 thread::sleep(Duration::from_millis(50));
             };
 
-            //dbg!("Producer has started");
-
             let screen_size = (WIDTH * HEIGHT) as usize;
             loop {
                 if is_end_scene_active.load(Ordering::SeqCst) {
+                    let prev_scene = renderer.read().unwrap().scene_manager.active_scene.clone();
                     let prev_background = renderer
                         .write()
                         .unwrap()
@@ -200,15 +192,15 @@ impl Engine for GameEngine {
                         }
                     }
                     renderer.write().unwrap().scene_manager = SceneManager::new(
-                        start_scene.clone(),
-                        renderer.read().unwrap().scene_manager.end_scene.clone(),
+                        prev_scene,
+                        EndScene::new(new_background.clone(), timeout_ms),
                     );
                     renderer
                         .write()
                         .unwrap()
                         .set_background(prev_background)
                         .unwrap();
-                    is_end_scene_active.store(true, std::sync::atomic::Ordering::SeqCst);
+                    is_end_scene_active.store(false, std::sync::atomic::Ordering::SeqCst);
                 }
                 /*let vector_move = match *key_pressed_clone.read().unwrap() {
                     Some(KeyCode::KeyW) => (0, 1),
