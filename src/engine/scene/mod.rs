@@ -21,7 +21,7 @@ mod object_manager;
 #[derive(Clone)]
 pub struct Scene {
     /// Manager responsible for storing and controlling multiple game objects.
-    manager: GameObjectManager,
+    pub manager: GameObjectManager,
     /// The main game object within this scene.
     pub main_object: GameObject,
 }
@@ -40,10 +40,11 @@ impl Scene {
         objects: Vec<GameObject>,
         main_components: Vec<Box<dyn Component + Send + Sync>>,
         main_position: Position,
+        uids: &mut Vec<usize>,
     ) -> Self {
         let mut obj_manager = GameObjectManager::new(256);
         for obj in objects {
-            obj_manager.add_game_object(obj.components, obj.position)
+            uids.push(obj_manager.add_game_object(obj.components, obj.position));
         }
         Scene {
             manager: obj_manager,
@@ -111,6 +112,10 @@ impl Scene {
         self.manager.remove_game_object(uid);
         self.init()
     }
+
+    pub fn ref_mut_by_uid(&mut self, uid: usize) -> &mut GameObject {
+        self.manager.game_objects.get_mut(&uid).unwrap()
+    }
 }
 
 #[cfg(test)]
@@ -128,6 +133,7 @@ mod tests {
                 z: 3,
                 is_relative: false,
             },
+            &mut vec![],
         );
         assert_eq!(scene.manager.game_objects.len(), 0);
         assert_eq!(scene.main_object.components.len(), 0);
@@ -168,6 +174,7 @@ mod tests {
                 z: 0,
                 is_relative: false,
             },
+            &mut vec![],
         );
         assert_eq!(scene.manager.game_objects.len(), 2);
     }
@@ -183,6 +190,7 @@ mod tests {
                 z: 2,
                 is_relative: false,
             },
+            &mut vec![],
         );
         assert_eq!(scene.main_object.components.len(), 0);
     }
@@ -208,6 +216,7 @@ mod tests {
                 z: 0,
                 is_relative: false,
             },
+            &mut vec![],
         );
         let result = scene.init();
         assert_eq!(result.len(), 0);

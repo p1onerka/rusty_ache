@@ -37,6 +37,14 @@ impl SceneManager {
         &self.active_scene
     }
 
+    /// Returns a mut reference to the currently active scene.
+    ///
+    /// # Returns
+    /// A mut reference to the active `Scene`.
+    pub fn ref_mut_by_uid(&mut self, uid: usize) -> &mut GameObject {
+        self.active_scene.ref_mut_by_uid(uid)
+    }
+
     /// Initializes and retrieves all renderable objects from the active scene.
     ///
     /// This method calls the `init()` method of the current scene, which prepares
@@ -92,6 +100,7 @@ mod tests {
             vec![],
             _create_test_components(),
             _create_test_position(0, 0, 0, false),
+            &mut vec![],
         )
     }
 
@@ -107,7 +116,12 @@ mod tests {
             objects.push(obj);
         }
 
-        Scene::new(objects, vec![], _create_test_position(0, 0, 0, false))
+        Scene::new(
+            objects,
+            vec![],
+            _create_test_position(0, 0, 0, false),
+            &mut vec![],
+        )
     }
 }
 

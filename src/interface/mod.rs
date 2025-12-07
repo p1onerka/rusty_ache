@@ -103,8 +103,13 @@ pub fn create_obj_with_img(image_path: &str, x: i32, y: i32, has_shadow: bool) -
 ///
 /// # Returns
 /// A full `Scene` instance initialized and ready for rendering.
-pub fn init_scene(objs: &[ObjectWithImage], main_obj: ObjectWithImage) -> Scene {
+pub fn init_scene(
+    objs: &[ObjectWithImage],
+    main_obj: ObjectWithImage,
+    uids: &mut Vec<usize>,
+) -> Scene {
     let game_objs = create_gameobj_vec(objs);
+
     Scene::new(
         game_objs,
         vec![Box::new(Sprite::new(
@@ -123,6 +128,7 @@ pub fn init_scene(objs: &[ObjectWithImage], main_obj: ObjectWithImage) -> Scene 
             z: 0,
             is_relative: false,
         },
+        uids,
     )
 }
 
@@ -188,7 +194,7 @@ mod tests {
         let main_obj = create_obj_with_img("./resources/perf_diag.png", 300, 300, true);
         let main_obj_x = main_obj.x;
         let main_obj_y = main_obj.y;
-        let scene = init_scene(&objs, main_obj);
+        let scene = init_scene(&objs, main_obj, &mut vec![]);
         assert_eq!(scene.main_object.position.x, main_obj_x);
         assert_eq!(scene.main_object.position.y, main_obj_y);
     }

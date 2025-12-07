@@ -14,7 +14,7 @@ use crate::engine::scene::game_object::GameObject;
 /// - a `new` constructor with an initialization parameter `is_downed`
 ///
 /// Implementors can define custom behavior for initialization and per-frame updates.
-pub trait Script {
+pub trait Script: Send {
     /// Apply the script's action on the given mutable game object reference.
     ///
     /// Allows modifying object state, trigger events, or update components.

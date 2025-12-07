@@ -9,7 +9,7 @@
 use crate::engine::scene::game_object::Position;
 use crate::engine::scene::game_object::components::Component;
 use crate::engine::scene::game_object::{GameObject, Object};
-use std::collections::{HashMap, HashSet};
+use std::collections::{BTreeMap, HashSet};
 
 /// Factory struct for creating game objects with unique IDs.
 ///
@@ -281,14 +281,14 @@ mod factory_tests {
 
 #[derive(Clone)]
 pub struct GameObjectManager {
-    pub game_objects: HashMap<usize, GameObject>,
+    pub game_objects: BTreeMap<usize, GameObject>,
     factory: GameObjectFactory,
 }
 
 impl GameObjectManager {
     pub fn new(max_objects: usize) -> Self {
         GameObjectManager {
-            game_objects: HashMap::new(),
+            game_objects: BTreeMap::new(),
             factory: GameObjectFactory::new(max_objects),
         }
     }
@@ -297,9 +297,10 @@ impl GameObjectManager {
         &mut self,
         components: Vec<Box<dyn Component + Send + Sync>>,
         position: Position,
-    ) {
+    ) -> usize {
         let (uid, object) = self.factory.create_object(components, position);
         self.game_objects.insert(uid, object);
+        uid
     }
 
     pub fn remove_game_object(&mut self, uid: usize) {
