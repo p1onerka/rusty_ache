@@ -24,6 +24,7 @@ use crate::render::renderer::{DEFAULT_BACKGROUND_COLOR, Renderer};
 use crate::screen::{App, HEIGHT, WIDTH};
 // use crate::end_scene::EndScene;
 //use image::ImageReader;
+use crate::engine::scene::game_object::components::script::Script;
 use std::io::Error;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, RwLock};
@@ -46,7 +47,7 @@ pub trait Engine {
     fn render(&mut self) -> Result<(), Error>;
 
     /// Starts and runs the engine main loop.
-    fn run(&mut self) -> Result<(), Error>;
+    fn run(&mut self, actionable: Vec<(usize, Box<dyn Script>)>) -> Result<(), Error>;
 
     /// Creates a new engine instance from configuration and initial scene.
     fn new(config: Box<dyn Config + Send>, scene: Scene, end_scene: EndScene) -> Self
@@ -111,7 +112,7 @@ impl Engine for GameEngine {
     /// Spawns a producer thread that updates the main object's position based on key input
     /// and triggers rendering updates.
     /// Runs the `winit` event loop with the associated GUI application.
-    fn run(&mut self) -> Result<(), Error> {
+    fn run(&mut self, mut actionable: Vec<(usize, Box<dyn Script>)>) -> Result<(), Error> {
         let initial_resolution = Resolution {
             width: WIDTH,
             height: HEIGHT,
@@ -148,6 +149,7 @@ impl Engine for GameEngine {
             .end_scene
             .background
             .clone();
+        const SCREEN_SIZE: usize = (WIDTH * HEIGHT) as usize;
 
         thread::spawn(move || {
             let window_arc: Arc<Window> = loop {
@@ -159,7 +161,6 @@ impl Engine for GameEngine {
 
             //dbg!("Producer has started");
 
-            let screen_size = (WIDTH * HEIGHT) as usize;
             loop {
                 if is_end_scene_active.load(Ordering::SeqCst) {
                     let prev_background = renderer
@@ -167,7 +168,8 @@ impl Engine for GameEngine {
                         .unwrap()
                         .set_background(new_background.clone());
                     let empty_object = create_obj_with_img(EMPTY, 0, 0, false);
-                    let scene = init_scene(&[], empty_object);
+                    let mut uids: Vec<usize> = vec![];
+                    let scene = init_scene(&[], empty_object, &mut uids);
                     let timeout_ms = renderer.read().unwrap().scene_manager.end_scene.timeout_ms;
                     renderer.write().unwrap().scene_manager =
                         SceneManager::new(scene, EndScene::new(new_background.clone(), timeout_ms));
@@ -185,7 +187,7 @@ impl Engine for GameEngine {
                                     .write()
                                     .expect("Producer couldn't lock pixel data");
 
-                                for (idx, p) in pixels.iter_mut().take(screen_size).enumerate() {
+                                for (idx, p) in pixels.iter_mut().take(SCREEN_SIZE).enumerate() {
                                     *p = colors[idx];
                                 }
 
@@ -233,6 +235,10 @@ impl Engine for GameEngine {
                     .main_object
                     .add_position((vector_move.0, vector_move.1));
 
+                for (uid, script) in actionable.iter_mut() {
+                    script.action(renderer.write().unwrap().scene_manager.ref_mut_by_uid(*uid))
+                }
+
                 {
                     let pos = renderer
                         .read()
@@ -253,7 +259,7 @@ impl Engine for GameEngine {
                             .write()
                             .expect("Producer couldn't lock pixel data");
 
-                        for (idx, p) in pixels.iter_mut().take(screen_size).enumerate() {
+                        for (idx, p) in pixels.iter_mut().take(SCREEN_SIZE).enumerate() {
                             *p = colors[idx];
                         }
 
@@ -300,6 +306,7 @@ mod tests {
                 z: 0,
                 is_relative: false,
             },
+            &mut vec![],
         )
     }
 }
